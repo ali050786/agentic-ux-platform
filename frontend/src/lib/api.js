@@ -16,3 +16,49 @@ export async function generatePersona(data) {
 
   return await response.json()
 }
+
+export async function savePersonaExport(payload, token) {
+  const response = await fetch(`${BASE_URL}/export/persona`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(payload)
+  })
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+  return await response.json()
+}
+
+export async function listSavedPersonas(token) {
+  const response = await fetch(`${BASE_URL}/export/persona/me`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+  return await response.json()
+}
+
+export async function getSavedPersona(id, token) {
+  const response = await fetch(`${BASE_URL}/export/persona/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+  return await response.json()
+}
+
+export async function deleteSavedPersona(id, token) {
+  const response = await fetch(`${BASE_URL}/export/persona/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  if (!response.ok) {
+    throw new Error(await response.text())
+  }
+  return await response.json()
+}
