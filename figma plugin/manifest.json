@@ -1,0 +1,7 @@
+{
+  "name": "Persona Renderer",
+  "id": "com.openuxlab.persona.renderer",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"]
+}
