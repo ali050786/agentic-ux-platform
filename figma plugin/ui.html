@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1rem; }
+  </style>
+</head>
+<body>
+  <h3><svg xmlns="http://www.w3.org/2000/svg" class="inline" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 15.5a3.5 3.5 0 0 1 4.5-4.5h1a3.5 3.5 0 1 1 0 7H12a3.5 3.5 0 0 1-4.5-2.5z"/><circle cx="8.5" cy="10.5" r="1"/><circle cx="15.5" cy="10.5" r="1"/></svg> Paste Design Token</h3>
+  <input id="tokenInput" placeholder="Enter token here..." />
+  <button id="renderBtn">Render Design</button>
+
+  <script>
+    document.getElementById('renderBtn').onclick = async () => {
+      const token = document.getElementById('tokenInput').value.trim();
+      if (!token) return alert("Please enter a token.");
+
+      try {
+        const res = await fetch(`http://localhost:8000/api/export/public/persona/${token}`);
+        if (!res.ok) throw new Error("Invalid token or persona not found");
+
+        const persona = await res.json();
+        parent.postMessage({
+          pluginMessage: {
+            type: 'render-json',
+            payload: persona
+          }
+        }, '*');
+      } catch (err) {
+        alert("Error: Failed to fetch design. Check the token and try again.");
+      }
+    };
+  </script>
+</body>
+</html>
