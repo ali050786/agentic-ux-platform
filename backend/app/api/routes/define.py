@@ -44,8 +44,9 @@ class PersonaSeed(BaseModel):
 # ----------- Route ----------- #
 @router.post("/persona")
 def generate_persona_route(input_data: PersonaSeed, background_tasks: BackgroundTasks, user_id: str = Depends(_decode_user)):
-    print("[Define] Received request to generate persona")
+    print("[Define] Received request to generate persona", input_data)
     try:
+        
         result = generate_persona(input_data.dict())
         persona_json = result.dict() if hasattr(result, 'dict') else dict(result) 
         persona_id = str(uuid.uuid4())

@@ -88,7 +88,7 @@ export default function PersonaForm({ onGenerate, loading }) {
           type="text"
           value={location}
           onChange={e => setLocation(e.target.value)}
-          placeholder="e.g., New York, Remote, US, Europe"
+          placeholder="e.g., San Francisco, US"
           className="mt-1"
         />
       </label>

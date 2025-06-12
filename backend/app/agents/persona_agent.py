@@ -68,7 +68,7 @@ def get_format_instructions_by_type(persona_type: str) -> str:
     templates = {
         "Classic": """
 Return a JSON object with the following keys:
-- name, title, type, location, generation, status, income: strings
+- name, title, type, location (state and country), generation, status, income: strings
 - background: list of strings
 - personality: dictionary (4 traits, 0–100)
 - behaviorTags: list of strings
@@ -81,7 +81,7 @@ Only return the JSON.
         "Agile": """
 Return a JSON object with the following keys:
 - type="Agile" (Send always "Agile")
-- name, role, location, type="Agile", status, archetype: strings
+- name, role, location (state and country), type="Agile", status, archetype: strings
 - goals: list of strings
 - painPoints: list of strings
 - tools: list of strings
@@ -89,7 +89,7 @@ Only return the JSON.
 """,
         "JTBD": """
 Return a JSON object with the following keys:
-- name, role, location, archetype: strings,  type="JTBD",
+- name, role, location (state and country), archetype: strings,  type="JTBD",
 - type="JTBD" (Send always "JTBD")
 - goals_jtbd: list of strings
 - motivations: dictionary (0–100 values)
@@ -99,7 +99,7 @@ Only return the JSON.
 """,
         "Empathy": """
 Return a JSON object with the following keys:
-- name, title, location, archetype: strings,
+- name, title, location (state and country), archetype: strings,
 - type="Empathy" (Send always "Empathy")
 - background: list of strings
 - behaviorTags: list of strings
@@ -120,13 +120,17 @@ prompt = ChatPromptTemplate.from_messages([
 2. Contain contradictions and complexities found in real humans
 3. Prioritize design-actionable insights over demographics
 4. Include behavioral triggers and decision-making patterns
-5. Connect pain points directly to design opportunities"""),
+5. Connect pain points directly to design opportunities
+6. Include cultural behaviors, language preferences, and regional traits based on specified location (e.g., India vs US vs Brazil)
+7. Contain contradictions and complexities found in real humans
+"""),
 
     ("human", """## Persona Specification
 **Type**: {persona_type}
 **Project**: {project_name}
 **User Role**: {target_user_role}
 **Product Context**: {product_context}
+**Location**: {location}
 
 ## Strategic Considerations
 - Include 1-2 paradoxical traits (e.g.: "Values efficiency but spends hours curating perfect playlists")
@@ -166,6 +170,7 @@ def generate_persona(data: dict) -> Union[BaseModel, dict]:
         "target_user_role": data["target_user_role"],
         "product_context": data["product_context"],
         "persona_type": persona_type,
+        "location": data["location"],
         "format_instructions": format_instructions
     }
 
