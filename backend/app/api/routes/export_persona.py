@@ -92,7 +92,8 @@ def get_public_persona(token: str):
     if res.data:
         combined = {
             **res.data["persona_json"],
-            "profile_image_url": res.data.get("profile_image_url")
+            "profile_image_url": res.data.get("profile_image_url"),
+            "theme": res.data.get("theme")
         }
         return combined
     raise HTTPException(status_code=404, detail="Persona not found")
@@ -117,3 +118,18 @@ def fix_missing_design_tokens():
             supabase.table("personas").update({"design_token": token}).eq("id", p["id"]).execute()
             updated += 1
     return {"updated": updated, "message": f"Updated {updated} personas with missing design_token."}
+
+
+class ThemeUpdate(BaseModel):
+    theme: str
+
+@router.patch("/persona/{persona_id}/theme")
+def update_persona_theme(persona_id: str, payload: ThemeUpdate, user_id: str = Depends(_decode_user)):
+    res = supabase.table("personas").update({"theme": payload.theme}).eq("id", persona_id).eq("user_id", user_id).execute()
+    if hasattr(res, "error") and res.error:
+        raise HTTPException(status_code=404, detail="Persona not found or update failed")
+    # Fetch updated persona
+    persona = supabase.table("personas").select("*").eq("id", persona_id).eq("user_id", user_id).single().execute()
+    if hasattr(persona, "error") and persona.error:
+        raise HTTPException(status_code=404, detail="Persona not found after update")
+    return persona.data

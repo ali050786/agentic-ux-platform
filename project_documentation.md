@@ -7,8 +7,7 @@
 │   │   ├── agents/
 │   │   │   ├── persona_agent.py
 │   │   │   ├── persona_image_mapper.py
-│   │   │   ├── persona_image_mapping.xlsx
-│   │   │   └── updated_persona_image_mapping.xlsx
+│   │   │   └── persona_image_mapping.xlsx
 │   │   ├── api/
 │   │   │   ├── deps.py
 │   │   │   └── routes/
@@ -34,7 +33,10 @@
 │   │       ├── file_processor.py
 │   │       └── together_image.py
 │   ├── conda_requirements.txt
+│   ├── package.json
+│   ├── persona_image_mapping.xlsx
 │   ├── pyvenv.cfg
+│   └── updated_persona_image_mapping.xlsx
 ├── dont/
 ├── figma plugin/
 │   ├── code.js
@@ -43,6 +45,7 @@
 ├── frontend/
 │   ├── .env.local
 │   ├── .gitignore
+│   ├── components.json
 │   ├── package.json
 │   ├── postcss.config.js
 │   ├── src/
@@ -55,6 +58,7 @@
 │   │   │   ├── HeaderBar.jsx
 │   │   │   ├── WelcomeCard.jsx
 │   │   │   ├── persona/
+│   │   │   │   ├── ColorThemeSelector.jsx
 │   │   │   │   ├── CustomPrompt.jsx
 │   │   │   │   ├── FileUpload.jsx
 │   │   │   │   ├── PersonaBuilder.jsx
@@ -67,11 +71,14 @@
 │   │   │   │   ├── PersonaForm.jsx
 │   │   │   │   ├── PersonaPreview.jsx
 │   │   │   │   ├── PersonaViewer.jsx
-│   │   │   │   ├── TagInput.jsx
-│   │   │   │   └── generate/
+│   │   │   │   └── TagInput.jsx
 │   │   │   └── ui/
+│   │   │       ├── ProTip.jsx
 │   │   │       ├── accordion.jsx
+│   │   │       ├── alert-dialog.jsx
+│   │   │       ├── badge.jsx
 │   │   │       ├── button.jsx
+│   │   │       ├── buttons.jsx
 │   │   │       ├── card.jsx
 │   │   │       ├── input.jsx
 │   │   │       ├── select.jsx
@@ -93,7 +100,9 @@
 │   │   ├── persona.jpg
 │   │   ├── persona.pdf
 │   │   ├── reportWebVitals.js
-│   │   └── setupTests.js
+│   │   ├── setupTests.js
+│   │   └── styles/
+│   │       └── globals.css
 │   └── tailwind.config.js
 ├── orchestration/
 │   ├── agents/
@@ -324,6 +333,18 @@ yarl=1.20.0=pypi_0
 zstandard=0.23.0=pypi_0
 ```
 
+## 📄 Code in `backend\package.json`
+```code
+{
+  "dependencies": {
+    "class-variance-authority": "^0.7.1"
+  }
+}
+```
+
+## 📄 Code in `backend\persona_image_mapping.xlsx`
+⚠️ Error reading file: 'utf-8' codec can't decode bytes in position 15-16: invalid continuation byte
+
 ## 📄 Code in `backend\pyvenv.cfg`
 ```code
 home = C:\Users\ali05\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0
@@ -332,6 +353,9 @@ version = 3.13.3
 executable = C:\Users\ali05\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe
 command = C:\Users\ali05\AppData\Local\Microsoft\WindowsApps\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\python.exe -m venv C:\projects\agentic-platform\backend
 ```
+
+## 📄 Code in `backend\updated_persona_image_mapping.xlsx`
+⚠️ Error reading file: 'utf-8' codec can't decode byte 0x8f in position 22: invalid start byte
 
 ## 📄 Code in `backend\app\main.py`
 ```code
@@ -431,7 +455,7 @@ def get_format_instructions_by_type(persona_type: str) -> str:
     templates = {
         "Classic": """
 Return a JSON object with the following keys:
-- name, title, type, location, generation, status, income: strings
+- name, title, type, location (state and country), generation, status, income: strings
 - background: list of strings
 - personality: dictionary (4 traits, 0–100)
 - behaviorTags: list of strings
@@ -444,7 +468,7 @@ Only return the JSON.
         "Agile": """
 Return a JSON object with the following keys:
 - type="Agile" (Send always "Agile")
-- name, role, location, type="Agile", status, archetype: strings
+- name, role, location (state and country), type="Agile", status, archetype: strings
 - goals: list of strings
 - painPoints: list of strings
 - tools: list of strings
@@ -452,7 +476,7 @@ Only return the JSON.
 """,
         "JTBD": """
 Return a JSON object with the following keys:
-- name, role, location, archetype: strings,  type="JTBD",
+- name, role, location (state and country), archetype: strings,  type="JTBD",
 - type="JTBD" (Send always "JTBD")
 - goals_jtbd: list of strings
 - motivations: dictionary (0–100 values)
@@ -462,7 +486,7 @@ Only return the JSON.
 """,
         "Empathy": """
 Return a JSON object with the following keys:
-- name, title, location, archetype: strings,
+- name, title, location (state and country), archetype: strings,
 - type="Empathy" (Send always "Empathy")
 - background: list of strings
 - behaviorTags: list of strings
@@ -483,13 +507,17 @@ prompt = ChatPromptTemplate.from_messages([
 2. Contain contradictions and complexities found in real humans
 3. Prioritize design-actionable insights over demographics
 4. Include behavioral triggers and decision-making patterns
-5. Connect pain points directly to design opportunities"""),
+5. Connect pain points directly to design opportunities
+6. Include cultural behaviors, language preferences, and regional traits based on specified location (e.g., India vs US vs Brazil)
+7. Contain contradictions and complexities found in real humans
+"""),
 
     ("human", """## Persona Specification
 **Type**: {persona_type}
 **Project**: {project_name}
 **User Role**: {target_user_role}
 **Product Context**: {product_context}
+**Location**: {location}
 
 ## Strategic Considerations
 - Include 1-2 paradoxical traits (e.g.: "Values efficiency but spends hours curating perfect playlists")
@@ -529,6 +557,7 @@ def generate_persona(data: dict) -> Union[BaseModel, dict]:
         "target_user_role": data["target_user_role"],
         "product_context": data["product_context"],
         "persona_type": persona_type,
+        "location": data["location"],
         "format_instructions": format_instructions
     }
 
@@ -574,7 +603,7 @@ import random
 import re
 
 # Path to the Excel mapping file
-EXCEL_PATH = os.path.join(os.path.dirname(__file__), 'updated_persona_image_mapping.xlsx')
+EXCEL_PATH = os.path.join(os.path.dirname(__file__), 'persona_image_mapping.xlsx')
 
 # Load the Excel file once at module load
 def load_mapping():
@@ -682,9 +711,6 @@ def map_and_update_image(persona_id, persona_json):
 ```
 
 ## 📄 Code in `backend\app\agents\persona_image_mapping.xlsx`
-⚠️ Error reading file: 'utf-8' codec can't decode bytes in position 15-16: invalid continuation byte
-
-## 📄 Code in `backend\app\agents\updated_persona_image_mapping.xlsx`
 ⚠️ Error reading file: 'utf-8' codec can't decode byte 0x8f in position 22: invalid start byte
 
 ## 📄 Code in `backend\app\api\deps.py`
@@ -723,11 +749,11 @@ def update_persona_image(persona_id, persona_json):
     print(f"[Define] Sending request to image mapper for persona_id: {persona_id}")
     try:
         image_path = find_best_image_for_persona(persona_json)
-        print(f"[Define] Received mapped image for persona_id: {persona_id}, image_path: {image_path}")
+        
         if image_path:
             from app.db.supabase_client import supabase
             supabase.table("personas").update({"profile_image_url": image_path}).eq("id", persona_id).execute()
-            print(f"[Define] Updated persona_id: {persona_id} with profile_image_url: {image_path}")
+            
     except Exception as e:
         print(f"[Define] Error in image mapping for persona_id: {persona_id}: {e}")
 
@@ -748,12 +774,13 @@ class PersonaSeed(BaseModel):
     project_name: str
     target_user_role: str
     product_context: str
-    persona_type:str
+    persona_type: str
+    location: str
 
 # ----------- Route ----------- #
 @router.post("/persona")
 def generate_persona_route(input_data: PersonaSeed, background_tasks: BackgroundTasks, user_id: str = Depends(_decode_user)):
-    print("[Define] Received request to generate persona")
+    print("[Define] Received request to generate persona", input_data)
     try:
         
         result = generate_persona(input_data.dict())
@@ -873,7 +900,11 @@ def get_public_persona(token: str):
     if hasattr(res, "error") and res.error:
         raise HTTPException(status_code=404, detail="Persona not found")
     if res.data:
-        return res.data.get("persona_json")
+        combined = {
+            **res.data["persona_json"],
+            "profile_image_url": res.data.get("profile_image_url")
+        }
+        return combined
     raise HTTPException(status_code=404, detail="Persona not found")
 
 
@@ -896,6 +927,21 @@ def fix_missing_design_tokens():
             supabase.table("personas").update({"design_token": token}).eq("id", p["id"]).execute()
             updated += 1
     return {"updated": updated, "message": f"Updated {updated} personas with missing design_token."}
+
+
+class ThemeUpdate(BaseModel):
+    theme: str
+
+@router.patch("/persona/{persona_id}/theme")
+def update_persona_theme(persona_id: str, payload: ThemeUpdate, user_id: str = Depends(_decode_user)):
+    res = supabase.table("personas").update({"theme": payload.theme}).eq("id", persona_id).eq("user_id", user_id).execute()
+    if hasattr(res, "error") and res.error:
+        raise HTTPException(status_code=404, detail="Persona not found or update failed")
+    # Fetch updated persona
+    persona = supabase.table("personas").select("*").eq("id", persona_id).eq("user_id", user_id).single().execute()
+    if hasattr(persona, "error") and persona.error:
+        raise HTTPException(status_code=404, detail="Persona not found after update")
+    return persona.data
 ```
 
 ## 📄 Code in `backend\app\api\routes\orientation.py`
@@ -1069,6 +1115,7 @@ def insert_persona_to_supabase(id: str, type: str, persona_json: dict, profile_i
         "persona_json": persona_json,
         "profile_image_url": profile_image_url,
         "design_token": design_token,
+        "theme": "purple",  # Set default theme
     }
     if user_id:
         data["user_id"] = user_id
@@ -1143,23 +1190,23 @@ figma.ui.onmessage = async (msg) => {
 
   switch (persona.type) {
     case "Classic":
-      renderClassicPersona(persona);
-      figma.closePlugin("✅ Classic Persona rendered from token");
+      await renderClassicPersona(persona);
+      figma.closePlugin("Success: Classic Persona rendered from token");
       break;
     case "Agile":
-      renderAgilePersona(persona);
-      figma.closePlugin("✅ Agile Persona rendered from token");
+      await renderAgilePersona(persona);
+      figma.closePlugin("Success: Agile Persona rendered from token");
       break;
     case "JTBD":
-      renderJtbdPersona(persona);
-      figma.closePlugin("✅ JTBD Persona rendered from token");
+      await renderJtbdPersona(persona);
+      figma.closePlugin("Success: JTBD Persona rendered from token");
       break;
     case "Empathy":
-      renderEmpathyPersona(persona);
-      figma.closePlugin("✅ Empathy Persona rendered from token");
+      await renderEmpathyPersona(persona);
+      figma.closePlugin("Success: Empathy Persona rendered from token");
       break;
     default:
-      figma.closePlugin("❌ Unknown persona type");
+      figma.closePlugin("Error: Unknown persona type");
   }
 };
 
@@ -1218,7 +1265,7 @@ function createCard(titleText, items = []) {
   return card;
 }
 // First Column
-function createFirstColumn(persona) {
+async function createFirstColumn(persona) {
   const col = figma.createFrame();
   col.layoutMode = "VERTICAL";
   col.itemSpacing = 48;
@@ -1231,11 +1278,34 @@ function createFirstColumn(persona) {
   col.cornerRadius = 10;
 
 
-  const avatar = figma.createEllipse();
-  avatar.resize(254, 254);
-  avatar.strokes = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
-  avatar.strokeWeight = 6;
-  avatar.fills = [{ type: "SOLID", color: { r: 1, g: 0.85, b: 0.8 } }];
+  async function createAvatarEllipse(imageUrl) {
+    const ellipse = figma.createEllipse();
+    ellipse.resize(254, 254);
+    ellipse.strokes = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
+    ellipse.strokeWeight = 6;
+  
+    if (imageUrl) {
+      try {
+        const imageBytes = await fetch(imageUrl).then(res => res.arrayBuffer());
+        const imageHash = figma.createImage(new Uint8Array(imageBytes)).hash;
+        ellipse.fills = [{
+          type: "IMAGE",
+          scaleMode: "FILL",
+          imageHash
+        }];
+      } catch (error) {
+        console.error("Failed to load image:", error);
+        ellipse.fills = [{ type: "SOLID", color: { r: 1, g: 0.85, b: 0.8 } }];
+      }
+    } else {
+      ellipse.fills = [{ type: "SOLID", color: { r: 1, g: 0.85, b: 0.8 } }];
+    }
+  
+    return ellipse;
+  }
+
+  const avatar = await createAvatarEllipse(persona.profile_image_url);
+  col.appendChild(avatar);
 
   const nameTitleBox = figma.createFrame();
   nameTitleBox.layoutMode = "VERTICAL";
@@ -1391,7 +1461,7 @@ function createMotivationsCard(motivations) {
 }
 //Classic//
 
-function renderClassicPersona(persona) {
+async function renderClassicPersona(persona) {
   function createSecondColumn(persona) {
     const col = figma.createFrame();
     col.layoutMode = "VERTICAL";
@@ -1447,7 +1517,7 @@ function renderClassicPersona(persona) {
         pill.paddingRight = 12;
         pill.paddingTop = 4;
         pill.paddingBottom = 4;
-        pill.cornerRadius = 100;
+        pill.cornerRadius = 15;
         pill.fills = [{ type: "SOLID", color: { r: 1, g: 0.9, b: 0.95 } }];
 
         const pillText = figma.createText();
@@ -1543,7 +1613,7 @@ function renderClassicPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = createFirstColumn(persona);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -1554,7 +1624,7 @@ function renderClassicPersona(persona) {
   figma.currentPage.appendChild(main);
 }
 
-function renderAgilePersona(persona) {
+async function renderAgilePersona(persona) {
   function createBrandsCard(brands) {
     const card = createCard("Favourite Brands");
     const wrap = figma.createFrame();
@@ -1629,7 +1699,7 @@ function renderAgilePersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = createFirstColumn(persona);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -1641,7 +1711,7 @@ function renderAgilePersona(persona) {
 }
 
 
-function renderJtbdPersona(persona) {
+async function renderJtbdPersona(persona) {
   function createBrandsCard(brands) {
     const card = createCard("Favourite Brands");
     const wrap = figma.createFrame();
@@ -1718,7 +1788,7 @@ function renderJtbdPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = createFirstColumn(persona);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -1731,7 +1801,7 @@ function renderJtbdPersona(persona) {
 
 
 
-function renderEmpathyPersona(persona) {
+async function renderEmpathyPersona(persona) {
   function createTagPill(text) {
     const pillFrame = figma.createFrame();
     pillFrame.layoutMode = "HORIZONTAL";
@@ -1820,7 +1890,7 @@ function renderEmpathyPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = createFirstColumn(persona);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -1991,23 +2061,23 @@ function renderEmpathyPersona(persona) {
 
   switch (persona.type) {
     case "Classic":
-      renderClassicPersona(persona);
-      figma.closePlugin("✅ Classic Persona rendered");
+      await renderClassicPersona(persona);
+      figma.closePlugin("Success: Classic Persona rendered");
       break;
     case "Agile":
-      renderAgilePersona(persona);
-      figma.closePlugin("✅ Agile Persona rendered");
+      await renderAgilePersona(persona);
+      figma.closePlugin("Success: Agile Persona rendered");
       break;
     case "JTBD":
-      renderJtbdPersona(persona);
-      figma.closePlugin("✅ JTBD Persona rendered");
+      await renderJtbdPersona(persona);
+      figma.closePlugin("Success: JTBD Persona rendered");
       break;
     case "Empathy":
-      renderEmpathyPersona(persona);
-      figma.closePlugin("✅ Empathy Persona rendered");
+      await renderEmpathyPersona(persona);
+      figma.closePlugin("Success: Empathy Persona rendered");
       break;
     default:
-      figma.closePlugin("❌ Unknown persona type");
+      figma.closePlugin("Error: Unknown persona type");
   }
 })();*/
 ```
@@ -2036,7 +2106,7 @@ function renderEmpathyPersona(persona) {
   </style>
 </head>
 <body>
-  <h3>🎨 Paste Design Token</h3>
+  <h3><svg xmlns="http://www.w3.org/2000/svg" class="inline" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 15.5a3.5 3.5 0 0 1 4.5-4.5h1a3.5 3.5 0 1 1 0 7H12a3.5 3.5 0 0 1-4.5-2.5z"/><circle cx="8.5" cy="10.5" r="1"/><circle cx="15.5" cy="10.5" r="1"/></svg> Paste Design Token</h3>
   <input id="tokenInput" placeholder="Enter token here..." />
   <button id="renderBtn">Render Design</button>
 
@@ -2057,7 +2127,7 @@ function renderEmpathyPersona(persona) {
           }
         }, '*');
       } catch (err) {
-        alert("❌ Failed to fetch design. Check the token and try again.");
+        alert("Error: Failed to fetch design. Check the token and try again.");
       }
     };
   </script>
@@ -2100,6 +2170,31 @@ yarn-error.log*
 .env
 ```
 
+## 📄 Code in `frontend\components.json`
+```code
+{
+    "$schema": "https://ui.shadcn.com/schema.json",
+    "style": "new-york",
+    "rsc": false,
+    "tsx": true,
+    "tailwind": {
+      "config": "",
+      "css": "src/styles/globals.css",
+      "baseColor": "neutral",
+      "cssVariables": true,
+      "prefix": ""
+    },
+    "aliases": {
+      "components": "@/components",
+      "utils": "@/lib/utils",
+      "ui": "@/components/ui",
+      "lib": "@/lib",
+      "hooks": "@/hooks"
+    },
+    "iconLibrary": "lucide"
+  }
+```
+
 ## 📄 Code in `frontend\package.json`
 ```code
 {
@@ -2107,17 +2202,25 @@ yarn-error.log*
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@radix-ui/themes": "^3.2.1",
     "@supabase/supabase-js": "^2.49.9",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
+    "axios": "^1.10.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "country-list": "^2.3.0",
+    "geoip-lite": "^1.4.10",
     "html-to-image": "^1.11.13",
     "jspdf": "^3.0.1",
+    "lucide-react": "^0.514.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2",
     "react-scripts": "5.0.1",
+    "tailwind-merge": "^3.3.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -2385,6 +2488,7 @@ import '@testing-library/jest-dom';
 import { useAuth } from "../context/AuthContext";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { Rocket } from "lucide-react";
 
 export default function HeaderBar() {
   const { user, signIn, signOut } = useAuth();
@@ -2398,22 +2502,23 @@ export default function HeaderBar() {
       className="fixed left-1/2 transform -translate-x-1/2 py-3 px-6 text-sm flex justify-between items-center z-50 w-full max-w-[1200px] md:max-w-[900px] sm:max-w-full border border-purple-200 bg-white"
       style={{ top: "20px", borderRadius: "40px", color: "#333333", boxShadow: "0 2px 12px 0 rgba(80, 0, 120, 0.07)" }}
     >
-      <span className="font-semibold text-lg">🚀 Open UX Lab</span>
+      <span className="font-semibold text-lg"><Rocket className="inline w-5 h-5 mr-1 align-text-bottom text-purple-600" /> Open UX Lab</span>
       <div className="flex gap-4 items-center">
         {!isBuilder && !isDashboard && (
-          <Link to="/builder" className="bg-purple-600 px-3 py-1 rounded">
-            Builder
-          </Link>
+          <Button className="bg-purple-600 px-3 py-1 rounded" onClick={() => navigate('/builder')}>
+          Generate Persona
+        </Button>
         )}
-        {isDashboard ? (
+        {isDashboard && (
           <Button className="bg-purple-600 px-3 py-1 rounded" onClick={() => navigate('/builder')}>
             Generate Persona
           </Button>
-        ) : (
+        )}
+        {user && !isDashboard ? (
           <Button className="bg-purple-600 px-3 py-1 rounded" onClick={() => navigate('/dashboard')}>
             Dashboard
           </Button>
-        )}
+        ) : null}
         {user ? (
           <>
             <span className="text-xs">Hi, {(() => {
@@ -2428,7 +2533,7 @@ export default function HeaderBar() {
           </>
         ) : (
           <button onClick={signIn} className="bg-white text-purple-700 px-3 py-1 rounded">
-            Sign in with Google
+            Log in with Google
           </button>
         )}
       </div>
@@ -2457,6 +2562,117 @@ function WelcomeCard() {
 }
 
 export default WelcomeCard
+```
+
+## 📄 Code in `frontend\src\components\persona\ColorThemeSelector.jsx`
+```code
+import React, { useState, useRef, useEffect } from "react";
+
+const COLOR_THEMES = [
+  { key: "purple", label: "Purple", colors: ["#a259e6", "#7c3aed"] },
+  { key: "blue", label: "Blue", colors: ["#3b82f6", "#2563eb"] },
+  { key: "green", label: "Green", colors: ["#22c55e", "#16a34a"] },
+  { key: "orange", label: "Orange", colors: ["#fb923c", "#f97316"] },
+  { key: "pink", label: "Pink", colors: ["#ec4899", "#db2777"] },
+  { key: "indigo", label: "Indigo", colors: ["#6366f1", "#4f46e5"] },
+  { key: "red", label: "Red", colors: ["#ef4444", "#dc2626"] },
+  { key: "teal", label: "Teal", colors: ["#14b8a6", "#0d9488"] },
+];
+
+export default function ColorThemeSelector({ value = "purple", onChange }) {
+  const [expanded, setExpanded] = useState(false);
+  const currentTheme = COLOR_THEMES.find(t => t.key === value) || COLOR_THEMES[0];
+  const cardRef = useRef(null);
+  const popupRef = useRef(null);
+  const [popupStyle, setPopupStyle] = useState({});
+
+  // Position the popup absolutely below the card
+  useEffect(() => {
+    if (expanded && cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setPopupStyle({
+        position: 'absolute',
+        left: rect.left + window.scrollX,
+        top: rect.bottom + 8 + window.scrollY, // 8px gap
+        zIndex: 1000,
+        minWidth: rect.width,
+      });
+    }
+  }, [expanded]);
+
+  // Close popup on outside click
+  useEffect(() => {
+    if (!expanded) return;
+    function handleClick(e) {
+      if (
+        cardRef.current && !cardRef.current.contains(e.target) &&
+        popupRef.current && !popupRef.current.contains(e.target)
+      ) {
+        setExpanded(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [expanded]);
+
+  return (
+    <>
+      <div
+        className="bg-white rounded-xl shadow px-5 py-2 cursor-pointer select-none transition border border-gray-100 hover:shadow-lg relative"
+        onClick={() => setExpanded((prev) => !prev)}
+        tabIndex={0}
+        role="button"
+        aria-expanded={expanded}
+        style={{ userSelect: 'none' }}
+        ref={cardRef}
+      >
+        <div className="flex items-center mb-1 gap-2">
+          <span className="inline-block bg-purple-100 p-2 rounded-full">
+            <svg width="20" height="20" fill="none" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14.5A6.5 6.5 0 1110 3.5a6.5 6.5 0 010 13z" fill="#a259e6"/></svg>
+          </span>
+          <div className="flex-1">
+            <div className="font-semibold">Color Theme</div>
+            <div className="text-xs text-gray-500">{currentTheme.label}</div>
+          </div>
+          <span className={`transition-transform ml-2 ${expanded ? 'rotate-90' : ''}`}>
+            <svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M7 5l5 5-5 5" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </span>
+        </div>
+      </div>
+      {expanded && (
+        <div
+          ref={popupRef}
+          style={popupStyle}
+          className="bg-white rounded-xl shadow-2xl border border-gray-200 p-5 mt-0 absolute animate-fade-in"
+        >
+          <div className="grid grid-cols-4 gap-3 mb-4 mt-1">
+            {COLOR_THEMES.map((theme) => (
+              <button
+                key={theme.key}
+                type="button"
+                className={`flex flex-col items-center border rounded-lg p-2 transition focus:outline-none ${
+                  value === theme.key ? "border-purple-600 shadow-lg" : "border-gray-200"
+                }`}
+                onClick={e => { e.stopPropagation(); onChange && onChange(theme.key); }}
+                aria-label={theme.label}
+              >
+                <span className="flex w-4 h-4 rounded-full overflow-hidden mb-1">
+                  <span style={{ background: theme.colors[0], flex: 1 }} />
+                  <span style={{ background: theme.colors[1], flex: 1 }} />
+                </span>
+                <span className="text-xs font-medium text-gray-700">{theme.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="bg-gray-50 rounded p-2 text-xs text-gray-600 flex items-center gap-2">
+            <span>Current theme:</span>
+            <span className="font-semibold text-gray-800 capitalize">{currentTheme.label}</span>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 ```
 
 ## 📄 Code in `frontend\src\components\persona\CustomPrompt.jsx`
@@ -2492,7 +2708,7 @@ export default function FileUpload() {
 import { useState, useEffect, useRef } from "react";
 import PersonaForm from "./PersonaForm";
 import PersonaPreview from "./PersonaPreview";
-import { generatePersona, pollPersonaStatus } from "../../lib/api";
+import { generatePersona, pollPersonaStatus, updatePersonaTheme } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -2503,6 +2719,18 @@ import logo from "../../logo.svg";
 import * as htmlToImage from "html-to-image";
 import jsPDF from "jspdf";
 import { copyToFigmaClipboard, generateFigmeta, encodeFigmeta } from '../../lib/figmaExport';
+import { Palette, FileText, FileImage, Figma } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "../ui/alert-dialog";
+import ColorThemeSelector from "./ColorThemeSelector";
 
 const socialOptions = [
   { value: "linkedin", label: "LinkedIn (4:5, Recommended)" },
@@ -2528,9 +2756,19 @@ export default function PersonaBuilder() {
   const navigate = useNavigate();
   const { id: personaId } = useParams();
   const exportRef = useRef();
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertTitle, setAlertTitle] = useState("");
+  const [alertDescription, setAlertDescription] = useState("");
+  const [colorTheme, setColorTheme] = useState(null);
 
   const handleGenerate = async (formData) => {
     if (!formData) return;
+    if (!session) {
+      setAlertTitle("Login Required");
+      setAlertDescription("You must be logged in to generate a persona. Please log in and try again.");
+      setAlertOpen(true);
+      return;
+    }
     try {
       setLoading(true);
       const result = await generatePersona(formData, session?.access_token);
@@ -2539,7 +2777,21 @@ export default function PersonaBuilder() {
         startPolling(result.id);
       }
     } catch (error) {
-      alert("Something went wrong while generating persona.");
+      let message = error?.message || "";
+      let backendMsg = message.replace(/^Persona generation failed:/, "").trim();
+      if (
+        message.includes("401") ||
+        message.toLowerCase().includes("unauthorized") ||
+        message.includes("403") ||
+        backendMsg.includes("Missing token")
+      ) {
+        setAlertTitle("Login Required");
+        setAlertDescription("You must be logged in to generate a persona. Please log in and try again.");
+      } else {
+        setAlertTitle("Persona Generation Failed");
+        setAlertDescription(backendMsg || "Something went wrong. Please try again.");
+      }
+      setAlertOpen(true);
     } finally {
       setLoading(false);
     }
@@ -2579,6 +2831,15 @@ export default function PersonaBuilder() {
       clearInterval(pollingRef.current);
     };
   }, [personaId]);
+
+  // When personaData changes, update colorTheme from personaData.theme (if present)
+  useEffect(() => {
+    if (personaData && personaData.theme) {
+      setColorTheme(personaData.theme);
+    } else if (personaData) {
+      setColorTheme('purple');
+    }
+  }, [personaData]);
 
   // Persona card element toggles
   const cardToggles = {
@@ -2620,8 +2881,35 @@ export default function PersonaBuilder() {
     pdf.save('persona.pdf');
   };
 
+  // Color theme change handler
+  const handleThemeChange = async (newTheme) => {
+    setColorTheme(newTheme);
+    if (personaData && personaData.id && session?.access_token) {
+      try {
+        const updated = await updatePersonaTheme(personaData.id, newTheme, session.access_token);
+        setPersonaData((prev) => ({ ...prev, ...updated }));
+        setColorTheme(updated.theme || newTheme);
+      } catch (err) {
+        // Optionally show error to user
+        console.error('Failed to update theme:', err);
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Alert Dialog for errors */}
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{alertTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{alertDescription}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setAlertOpen(false)} autoFocus>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* Sidebar */}
       <aside className="w-full md:w-80 p-4 bg-white flex flex-col gap-6 h-screen overflow-y-auto border border-purple-200 custom-scrollbar"
         style={{ boxShadow: "0 2px 12px 0 rgba(80, 0, 120, 0.07)" }}
@@ -2636,75 +2924,75 @@ export default function PersonaBuilder() {
             <div className="text-gray-500 text-sm text-center">This may take a few moments. Please wait!</div>
           </div>
         ) : personaData ? (
-          <div className="bg-white rounded-xl shadow p-5 mt-10 w-full max-w-xs">
-            <div className="flex items-center mb-6">
-              <span className="h-3 w-3 bg-green-400 rounded-full mr-2"></span>
-              <span className="font-semibold text-lg">Export Options</span>
+          <>
+            {/* Color Theme Selector - only visible after persona is generated */}
+            <ColorThemeSelector value={colorTheme || 'purple'} onChange={handleThemeChange} />
+            <div className="bg-white rounded-xl shadow px-5 py-5 w-full max-w-xs">
+              <div className="space-y-4">
+                {/* PDF Export */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><FileText strokeWidth={1.5}  className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">PDF Export</span>
+                        <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">Popular</span>
+                      </div>
+                      <div className="text-xs text-gray-500">Print-ready format for sharing and presentations</div>
+                    </div>
+                  </div>
+                  <button onClick={handleExportPDF} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
+                </div>
+                {/* Figma Plugin */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><Figma strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium flex items-center gap-1">Figma Plugin</span>
+                        <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded">Design</span>
+                      </div>
+                      <div className="text-xs text-gray-500">Click Export and paste the token into the Figma plugin</div>
+                    </div>
+                  </div>
+                  {personaData.design_token && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(personaData.design_token);
+                        alert('Token copied! Paste it into the Figma plugin.');
+                      }}
+                      className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full"
+                    >
+                      Export
+                    </button>
+                  )}
+                </div>
+                {/* JPG Export */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><FileImage  strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">JPG Image</span>
+                        <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded">Try Now</span>
+                      </div>
+                      <div className="text-xs text-gray-500">High quality image for web and print</div>
+                    </div>
+                  </div>
+                  <button onClick={handleExportJPG} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
+                </div>
+                <button
+                  className="w-full mt-6 bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition"
+                  onClick={() => {
+                    setPersonaData(null);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  + Create Another Persona
+                </button>
+              </div>
             </div>
-            <div className="space-y-4">
-              {/* PDF Export */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">📄</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">PDF Export</span>
-                      <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">Popular</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Print-ready format for sharing and presentations</div>
-                  </div>
-                </div>
-                <button onClick={handleExportPDF} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
-              </div>
-              {/* Figma Plugin */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🎨</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">Figma Plugin</span>
-                      <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded">Design</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Click Export and paste the token into the Figma plugin</div>
-                  </div>
-                </div>
-                {personaData.design_token && (
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(personaData.design_token);
-                      alert('Token copied! Paste it into the Figma plugin.');
-                    }}
-                    className="mt-4 mx-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded border border-purple-200 w-full"
-                  >
-                    Export
-                  </button>
-                )}
-              </div>
-              {/* JPG Export */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">🖼️</span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">JPG Image</span>
-                      <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded">Try Now</span>
-                    </div>
-                    <div className="text-xs text-gray-500">High quality image for web and print</div>
-                  </div>
-                </div>
-                <button onClick={handleExportJPG} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
-              </div>
-              <button
-                className="w-full mt-6 bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition"
-                onClick={() => {
-                  setPersonaData(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                + Create Another Persona
-              </button>
-            </div>
-          </div>
+          </>
         ) : (
           <PersonaForm onGenerate={handleGenerate} loading={loading} />
         )}
@@ -2712,12 +3000,8 @@ export default function PersonaBuilder() {
       {/* Main Canvas */}
       <main className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto bg-canvas-repeat bg-repeat">
         <div className="flex flex-col items-center justify-center w-full max-w-xl">
-          <PersonaPreview ref={exportRef} persona={personaData} loading={loading} cardToggles={cardToggles} />
-          {personaData && personaData.id && (
-            <Button className="mt-6 w-full" onClick={() => navigate(`/persona/${personaData.id}`)}>
-              View Full Persona
-            </Button>
-          )}
+          <PersonaPreview ref={exportRef} persona={personaData} loading={loading} cardToggles={cardToggles} colorTheme={colorTheme} />
+          
         </div>
       </main>
     </div>
@@ -2733,18 +3017,18 @@ import PersonaCardJTBD from "./PersonaCardJTBD"
 import PersonaCardEmpathy from "./PersonaCardEmpathy"
 import React from "react";
 
-const PersonaCard = React.forwardRef(function PersonaCard({ data }, ref) {
+const PersonaCard = React.forwardRef(function PersonaCard({ data, colorTheme }, ref) {
   if (!data || !data.type) return null
 
   switch (data.type) {
     case "Classic":
-      return <PersonaCardClassic data={data} ref={ref} />
+      return <PersonaCardClassic data={data} ref={ref} colorTheme={colorTheme} />
     case "Agile":
-      return <PersonaCardAgile data={data} ref={ref} />
+      return <PersonaCardAgile data={data} ref={ref} colorTheme={colorTheme} />
     case "JTBD":
-      return <PersonaCardJTBD data={data} ref={ref} />
+      return <PersonaCardJTBD data={data} ref={ref} colorTheme={colorTheme} />
     case "Empathy":
-      return <PersonaCardEmpathy data={data} ref={ref} />
+      return <PersonaCardEmpathy data={data} ref={ref} colorTheme={colorTheme} />
     default:
       return <p className="text-red-500">Unknown persona type</p>
   }
@@ -2757,12 +3041,96 @@ export default PersonaCard;
 ```code
 import React from "react";
 
-export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
+const COLOR_MAP = {
+  purple: {
+    bgLight: "bg-purple-50",
+    bg: "bg-purple-100",
+    text: "text-purple-600",
+    border: "border-purple-200",
+    tagBg: "bg-purple-100",
+    tagText: "text-purple-800",
+    bar: "bg-purple-600",
+    barBg: "bg-purple-100",
+  },
+  blue: {
+    bgLight: "bg-blue-50",
+    bg: "bg-blue-100",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    tagBg: "bg-blue-100",
+    tagText: "text-blue-800",
+    bar: "bg-blue-600",
+    barBg: "bg-blue-100",
+  },
+  green: {
+    bgLight: "bg-green-50",
+    bg: "bg-green-100",
+    text: "text-green-600",
+    border: "border-green-200",
+    tagBg: "bg-green-100",
+    tagText: "text-green-800",
+    bar: "bg-green-600",
+    barBg: "bg-green-100",
+  },
+  orange: {
+    bgLight: "bg-orange-50",
+    bg: "bg-orange-100",
+    text: "text-orange-600",
+    border: "border-orange-200",
+    tagBg: "bg-orange-100",
+    tagText: "text-orange-800",
+    bar: "bg-orange-600",
+    barBg: "bg-orange-100",
+  },
+  pink: {
+    bgLight: "bg-pink-50",
+    bg: "bg-pink-100",
+    text: "text-pink-600",
+    border: "border-pink-200",
+    tagBg: "bg-pink-100",
+    tagText: "text-pink-800",
+    bar: "bg-pink-600",
+    barBg: "bg-pink-100",
+  },
+  indigo: {
+    bgLight: "bg-indigo-50",
+    bg: "bg-indigo-100",
+    text: "text-indigo-600",
+    border: "border-indigo-200",
+    tagBg: "bg-indigo-100",
+    tagText: "text-indigo-800",
+    bar: "bg-indigo-600",
+    barBg: "bg-indigo-100",
+  },
+  red: {
+    bgLight: "bg-red-50",
+    bg: "bg-red-100",
+    text: "text-red-600",
+    border: "border-red-200",
+    tagBg: "bg-red-100",
+    tagText: "text-red-800",
+    bar: "bg-red-600",
+    barBg: "bg-red-100",
+  },
+  teal: {
+    bgLight: "bg-teal-50",
+    bg: "bg-teal-100",
+    text: "text-teal-600",
+    border: "border-teal-200",
+    tagBg: "bg-teal-100",
+    tagText: "text-teal-800",
+    bar: "bg-teal-600",
+    barBg: "bg-teal-100",
+  },
+};
+
+export default React.forwardRef(function PersonaCardAgile({ data, colorTheme = "blue" }, ref) {
+  const theme = COLOR_MAP[colorTheme] || COLOR_MAP.blue;
   const { name, role, location, status, archetype, goals, painPoints, motivations, tools, profile_image, profile_image_url } = data;
 
   const renderBar = (value) => (
-    <div className="w-full h-2 bg-blue-100 rounded">
-      <div className="h-full bg-blue-600 rounded" style={{ width: `${value}%` }} />
+    <div className={`w-full h-2 ${theme.barBg} rounded`}>
+      <div className={`h-full ${theme.bar} rounded`} style={{ width: `${value}%` }} />
     </div>
   );
 
@@ -2770,7 +3138,7 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
     <div ref={ref} className="bg-white rounded-[20px] p-10 shadow-md max-w-[1308px] text-[15px] text-gray-800">
       <div className="grid grid-cols-[302px_439px_439px] gap-[24px] items-start">
         {/* Column 1 - Avatar + Bio */}
-        <div className="flex flex-col items-center text-center gap-12 bg-blue-50 p-6 rounded-xl">
+        <div className={`flex flex-col items-center text-center gap-12 ${theme.bgLight} p-6 rounded-xl`}>
           {profile_image_url ? (
             <img
               src={profile_image_url}
@@ -2788,13 +3156,13 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
               height={254}
             />
           ) : (
-            <div className="w-[254px] h-[254px] bg-blue-100 rounded-full border-[6px] border-white" />
+            <div className={`w-[254px] h-[254px] ${theme.bg} rounded-full border-[6px] border-white`} />
           )}
           <div>
             <h2 className="text-[26px] font-bold">{name}</h2>
-            <p className="text-blue-600 font-semibold mt-3">{role}</p>
+            <p className={`${theme.text} font-semibold mt-3`}>{role}</p>
           </div>
-          <div className="bg-blue-100 p-4 rounded-xl w-full text-left space-y-1">
+          <div className={`${theme.bg} p-4 rounded-xl w-full text-left space-y-1`}>
             {location && <p><strong>Location</strong>: {location}</p>}
             {status && <p><strong>Status</strong>: {status}</p>}
             {archetype && <p><strong>Archetype</strong>: {archetype}</p>}
@@ -2804,7 +3172,7 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
         {/* Column 2 - Goals + Pain Points */}
         <div className="flex flex-col gap-6 h-full">
           {goals?.length > 0 && (
-            <div className="bg-blue-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="text-[17px] font-semibold mb-1">Goals</h3>
               <ul className="list-disc list-outside pl-4">
                 {goals.map((item, i) => <li key={i}>{item}</li>)}
@@ -2812,7 +3180,7 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
             </div>
           )}
           {painPoints?.length > 0 && (
-            <div className="bg-blue-100 p-4 rounded-xl flex-1">
+            <div className={`${theme.bg} p-4 rounded-xl flex-1`}>
               <h3 className="text-[17px] font-semibold mb-1">Pain Points</h3>
               <ul className="list-disc list-outside pl-4">
                 {painPoints.map((item, i) => <li key={i}>{item}</li>)}
@@ -2824,7 +3192,7 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
         {/* Column 3 - Motivation + Brands */}
         <div className="flex flex-col gap-6 h-full">
           {motivations && Object.keys(motivations).length > 0 && (
-            <div className="bg-blue-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="text-[17px] font-semibold mb-1">Motivation</h3>
               <div className="space-y-2">
                 {Object.entries(motivations).map(([k, v]) => (
@@ -2837,11 +3205,11 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
             </div>
           )}
           {tools?.length > 0 && (
-            <div className="bg-blue-100 p-4 rounded-xl flex-1">
+            <div className={`${theme.bg} p-4 rounded-xl flex-1`}>
               <h3 className="text-[17px] font-semibold mb-2">Favourite Brands</h3>
               <div className="flex flex-wrap gap-2">
                 {tools.map((tool, i) => (
-                  <span key={i} className="bg-blue-200 text-blue-800 text-xs px-3 py-1 rounded-full">
+                  <span key={i} className={`${theme.tagBg} ${theme.tagText} text-xs px-3 py-1 rounded-full`}>
                     {tool}
                   </span>
                 ))}
@@ -2858,12 +3226,97 @@ export default React.forwardRef(function PersonaCardAgile({ data }, ref) {
 ## 📄 Code in `frontend\src\components\persona\PersonaCardClassic.jsx`
 ```code
 import React from "react";
-export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
+
+const COLOR_MAP = {
+  purple: {
+    bgLight: "bg-purple-50",
+    bg: "bg-purple-100",
+    text: "text-purple-600",
+    border: "border-purple-200",
+    tagBg: "bg-purple-100",
+    tagText: "text-purple-800",
+    bar: "bg-purple-600",
+    barBg: "bg-purple-100",
+  },
+  blue: {
+    bgLight: "bg-blue-50",
+    bg: "bg-blue-100",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    tagBg: "bg-blue-100",
+    tagText: "text-blue-800",
+    bar: "bg-blue-600",
+    barBg: "bg-blue-100",
+  },
+  green: {
+    bgLight: "bg-green-50",
+    bg: "bg-green-100",
+    text: "text-green-600",
+    border: "border-green-200",
+    tagBg: "bg-green-100",
+    tagText: "text-green-800",
+    bar: "bg-green-600",
+    barBg: "bg-green-100",
+  },
+  orange: {
+    bgLight: "bg-orange-50",
+    bg: "bg-orange-100",
+    text: "text-orange-600",
+    border: "border-orange-200",
+    tagBg: "bg-orange-100",
+    tagText: "text-orange-800",
+    bar: "bg-orange-600",
+    barBg: "bg-orange-100",
+  },
+  pink: {
+    bgLight: "bg-pink-50",
+    bg: "bg-pink-100",
+    text: "text-pink-600",
+    border: "border-pink-200",
+    tagBg: "bg-pink-100",
+    tagText: "text-pink-800",
+    bar: "bg-pink-600",
+    barBg: "bg-pink-100",
+  },
+  indigo: {
+    bgLight: "bg-indigo-50",
+    bg: "bg-indigo-100",
+    text: "text-indigo-600",
+    border: "border-indigo-200",
+    tagBg: "bg-indigo-100",
+    tagText: "text-indigo-800",
+    bar: "bg-indigo-600",
+    barBg: "bg-indigo-100",
+  },
+  red: {
+    bgLight: "bg-red-50",
+    bg: "bg-red-100",
+    text: "text-red-600",
+    border: "border-red-200",
+    tagBg: "bg-red-100",
+    tagText: "text-red-800",
+    bar: "bg-red-600",
+    barBg: "bg-red-100",
+  },
+  teal: {
+    bgLight: "bg-teal-50",
+    bg: "bg-teal-100",
+    text: "text-teal-600",
+    border: "border-teal-200",
+    tagBg: "bg-teal-100",
+    tagText: "text-teal-800",
+    bar: "bg-teal-600",
+    barBg: "bg-teal-100",
+  },
+};
+
+export default React.forwardRef(function PersonaCardClassic({ data, colorTheme = "purple" }, ref) {
+  const theme = COLOR_MAP[colorTheme] || COLOR_MAP.purple;
   const { name, title, location, generation, status, income, archetype, background, personality, behaviorTags, goals, painPoints, motivations, tools, profile_image, profile_image_url } = data;
 
   const renderBar = (value) => (
-    <div className="w-full h-2 bg-red-100 rounded">
-      <div className="h-full bg-red-600 rounded" style={{ width: `${value}%` }} />
+    <div className={`w-full h-2 ${theme.barBg} rounded`}>
+      <div className={`h-full ${theme.bar} rounded`} style={{ width: `${value}%` }} />
     </div>
   );
 
@@ -2871,7 +3324,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
     <div ref={ref} className="bg-white rounded-[20px] p-10 shadow-md max-w-[1308px] text-sm text-gray-800">
       <div className="grid grid-cols-[302px_439px_439px] gap-[24px]">
         {/* Column 1 - Avatar & Info */}
-        <div className="flex flex-col items-center text-center gap-12 bg-red-50 p-6 rounded-xl">
+        <div className={`flex flex-col items-center text-center gap-12 ${theme.bgLight} p-6 rounded-xl`}>
           {/* Avatar/Profile Image */}
           {profile_image_url ? (
             <img
@@ -2890,17 +3343,17 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
               height={254}
             />
           ) : (
-            <div className="w-[254px] h-[254px] rounded-full bg-red-100 border-[6px] border-white" />
+            <div className="w-[254px] h-[254px] rounded-full bg-gray-100 border-[6px] border-white" />
           )}
 
           {/* Name + Role */}
           <div>
             <h2 className="text-2xl font-bold text-gray-900">{name}</h2>
-            <p className="text-red-600 font-semibold mt-3">{title}</p>
+            <p className={`${theme.text} font-semibold mt-3`}>{title}</p>
           </div>
 
           {/* Basic Info */}
-          <div className="bg-red-100 p-4 rounded-xl w-full text-left text-sm space-y-1">
+          <div className={`${theme.bg} p-4 rounded-xl w-full text-left text-sm space-y-1`}>
             {location && <p><strong>Location</strong>: {location}</p>}
             {generation && <p><strong>Generation/Age</strong>: {generation}</p>}
             {status && <p><strong>Status/Kids</strong>: {status}</p>}
@@ -2911,7 +3364,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
         {/* Column 2 - Background, Personality, Behavior Tags, Pain Points */}
         <div className="flex flex-col gap-6">
           {background?.length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Background</h3>
               <ul className="list-disc list-outside pl-4">
                 {background.map((item, i) => <li key={i}>{item}</li>)}
@@ -2920,7 +3373,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
           )}
 
           {personality && Object.keys(personality).length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Personality</h3>
               <div className="space-y-2">
                 {Object.entries(personality).map(([k, v]) => (
@@ -2934,18 +3387,18 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
           )}
 
           {behaviorTags?.length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-2">Behavior Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {behaviorTags.map((tag, i) => (
-                  <span key={i} className="bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full">{tag}</span>
+                  <span key={i} className={`${theme.tagBg} ${theme.tagText} text-xs px-3 py-1 rounded-full`}>{tag}</span>
                 ))}
               </div>
             </div>
           )}
 
           {painPoints?.length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Pain Points</h3>
               <ul className="list-disc list-outside pl-4">
                 {painPoints.map((item, i) => <li key={i}>{item}</li>)}
@@ -2957,7 +3410,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
         {/* Column 3 - Motivation, Goals, Favourite Brands */}
         <div className="flex flex-col gap-6">
           {motivations && Object.keys(motivations).length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Motivation</h3>
               <div className="space-y-2">
                 {Object.entries(motivations).map(([k, v]) => (
@@ -2971,7 +3424,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
           )}
 
           {goals?.length > 0 && (
-            <div className="bg-red-50 p-4 rounded-xl">
+            <div className={`${theme.bgLight} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Goals</h3>
               <ul className="list-disc list-outside pl-4">
                 {goals.map((item, i) => <li key={i}>{item}</li>)}
@@ -2980,7 +3433,7 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
           )}
 
           {/* Favourite Brands */}
-          <div className="bg-red-50 p-4 rounded-xl flex flex-col flex-1">
+          <div className={`${theme.bgLight} p-4 rounded-xl flex flex-col flex-1`}>
             <h3 className="font-semibold mb-2">Favourite Brands</h3>
             <div className="flex gap-4 items-center flex-wrap">
               {tools.map((tool, i) => (
@@ -3001,12 +3454,96 @@ export default React.forwardRef(function PersonaCardClassic({ data }, ref) {
 ```code
 import React from "react";
 
-export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
+const COLOR_MAP = {
+  purple: {
+    bgLight: "bg-purple-50",
+    bg: "bg-purple-100",
+    text: "text-purple-600",
+    border: "border-purple-200",
+    tagBg: "bg-purple-100",
+    tagText: "text-purple-800",
+    bar: "bg-purple-600",
+    barBg: "bg-purple-100",
+  },
+  blue: {
+    bgLight: "bg-blue-50",
+    bg: "bg-blue-100",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    tagBg: "bg-blue-100",
+    tagText: "text-blue-800",
+    bar: "bg-blue-600",
+    barBg: "bg-blue-100",
+  },
+  green: {
+    bgLight: "bg-green-50",
+    bg: "bg-green-100",
+    text: "text-green-600",
+    border: "border-green-200",
+    tagBg: "bg-green-100",
+    tagText: "text-green-800",
+    bar: "bg-green-600",
+    barBg: "bg-green-100",
+  },
+  orange: {
+    bgLight: "bg-orange-50",
+    bg: "bg-orange-100",
+    text: "text-orange-600",
+    border: "border-orange-200",
+    tagBg: "bg-orange-100",
+    tagText: "text-orange-800",
+    bar: "bg-orange-600",
+    barBg: "bg-orange-100",
+  },
+  pink: {
+    bgLight: "bg-pink-50",
+    bg: "bg-pink-100",
+    text: "text-pink-600",
+    border: "border-pink-200",
+    tagBg: "bg-pink-100",
+    tagText: "text-pink-800",
+    bar: "bg-pink-600",
+    barBg: "bg-pink-100",
+  },
+  indigo: {
+    bgLight: "bg-indigo-50",
+    bg: "bg-indigo-100",
+    text: "text-indigo-600",
+    border: "border-indigo-200",
+    tagBg: "bg-indigo-100",
+    tagText: "text-indigo-800",
+    bar: "bg-indigo-600",
+    barBg: "bg-indigo-100",
+  },
+  red: {
+    bgLight: "bg-red-50",
+    bg: "bg-red-100",
+    text: "text-red-600",
+    border: "border-red-200",
+    tagBg: "bg-red-100",
+    tagText: "text-red-800",
+    bar: "bg-red-600",
+    barBg: "bg-red-100",
+  },
+  teal: {
+    bgLight: "bg-teal-50",
+    bg: "bg-teal-100",
+    text: "text-teal-600",
+    border: "border-teal-200",
+    tagBg: "bg-teal-100",
+    tagText: "text-teal-800",
+    bar: "bg-teal-600",
+    barBg: "bg-teal-100",
+  },
+};
+
+export default React.forwardRef(function PersonaCardEmpathy({ data, colorTheme = "pink" }, ref) {
+  const theme = COLOR_MAP[colorTheme] || COLOR_MAP.pink;
   const { name, title, location, generation, status, income, archetype, background, personality, behaviorTags, painPoints, motivations, scenarios, profile_image, profile_image_url } = data;
 
   const renderBar = (value) => (
-    <div className="w-full h-2 bg-pink-100 rounded">
-      <div className="h-full bg-pink-600 rounded" style={{ width: `${value}%` }} />
+    <div className={`w-full h-2 ${theme.barBg} rounded`}>
+      <div className={`h-full ${theme.bar} rounded`} style={{ width: `${value}%` }} />
     </div>
   );
 
@@ -3014,7 +3551,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
     <div ref={ref} className="bg-white rounded-[20px] p-10 shadow-md max-w-[1308px] text-sm text-gray-800">
       <div className="grid grid-cols-[302px_439px_439px] gap-[24px] items-start">
         {/* Column 1 - Avatar + Name + Role + Bio */}
-        <div className="flex flex-col items-center text-center gap-12 bg-pink-50 p-6 rounded-xl">
+        <div className={`flex flex-col items-center text-center gap-12 ${theme.bgLight} p-6 rounded-xl`}>
           {profile_image_url ? (
             <img
               src={profile_image_url}
@@ -3032,13 +3569,13 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
               height={254}
             />
           ) : (
-            <div className="w-[254px] h-[254px] bg-pink-100 rounded-full border-[6px] border-white" />
+            <div className={`w-[254px] h-[254px] ${theme.bg} rounded-full border-[6px] border-white`} />
           )}
           <div>
             <h2 className="text-2xl font-bold">{name}</h2>
-            <p className="text-pink-600 font-semibold mt-3">{title}</p>
+            <p className={`${theme.text} font-semibold mt-3`}>{title}</p>
           </div>
-          <div className="bg-pink-100 p-4 rounded-xl w-full text-left space-y-1">
+          <div className={`${theme.bg} p-4 rounded-xl w-full text-left space-y-1`}>
             {location && <p><strong>Location</strong>: {location}</p>}
             {generation && <p><strong>Generation/Age</strong>: {generation}</p>}
             {archetype && <p><strong>Archetype</strong>: {archetype}</p>}
@@ -3048,7 +3585,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
         {/* Column 2 - Background, Behavior Tags, Personality */}
         <div className="flex flex-col gap-6 h-full">
           {background?.length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Background</h3>
               <ul className="list-disc list-outside pl-4">
                 {background.map((item, i) => <li key={i}>{item}</li>)}
@@ -3057,11 +3594,11 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
           )}
 
           {behaviorTags?.length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-2">Behavior Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {behaviorTags.map((tag, i) => (
-                  <span key={i} className="bg-pink-200 text-pink-800 text-xs px-3 py-1 rounded-full">
+                  <span key={i} className={`${theme.tagBg} ${theme.tagText} text-xs px-3 py-1 rounded-full`}>
                     {tag}
                   </span>
                 ))}
@@ -3070,7 +3607,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
           )}
 
           {personality && Object.keys(personality).length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-2">Personality</h3>
               <div className="space-y-2">
                 {Object.entries(personality).map(([k, v]) => (
@@ -3087,7 +3624,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
         {/* Column 3 - Pain Points, Motivation, Scenarios */}
         <div className="flex flex-col gap-6 h-full">
           {painPoints?.length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Pain Points</h3>
               <ul className="list-disc list-outside pl-4">
                 {painPoints.map((item, i) => <li key={i}>{item}</li>)}
@@ -3096,7 +3633,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
           )}
 
           {motivations && Object.keys(motivations).length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="font-semibold mb-1">Motivation</h3>
               <div className="space-y-2">
                 {Object.entries(motivations).map(([k, v]) => (
@@ -3110,7 +3647,7 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
           )}
 
           {scenarios?.length > 0 && (
-            <div className="bg-pink-100 p-4 rounded-xl flex-1">
+            <div className={`${theme.bg} p-4 rounded-xl flex-1`}>
               <h3 className="font-semibold mb-1">Scenario</h3>
               <ul className="list-disc list-outside pl-4">
                 {scenarios.map((item, i) => <li key={i}>{item}</li>)}
@@ -3128,12 +3665,96 @@ export default React.forwardRef(function PersonaCardEmpathy({ data }, ref) {
 ```code
 import React from "react";
 
-export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
+const COLOR_MAP = {
+  purple: {
+    bgLight: "bg-purple-50",
+    bg: "bg-purple-100",
+    text: "text-purple-600",
+    border: "border-purple-200",
+    tagBg: "bg-purple-100",
+    tagText: "text-purple-800",
+    bar: "bg-purple-600",
+    barBg: "bg-purple-100",
+  },
+  blue: {
+    bgLight: "bg-blue-50",
+    bg: "bg-blue-100",
+    text: "text-blue-600",
+    border: "border-blue-200",
+    tagBg: "bg-blue-100",
+    tagText: "text-blue-800",
+    bar: "bg-blue-600",
+    barBg: "bg-blue-100",
+  },
+  green: {
+    bgLight: "bg-green-50",
+    bg: "bg-green-100",
+    text: "text-green-600",
+    border: "border-green-200",
+    tagBg: "bg-green-100",
+    tagText: "text-green-800",
+    bar: "bg-green-600",
+    barBg: "bg-green-100",
+  },
+  orange: {
+    bgLight: "bg-orange-50",
+    bg: "bg-orange-100",
+    text: "text-orange-600",
+    border: "border-orange-200",
+    tagBg: "bg-orange-100",
+    tagText: "text-orange-800",
+    bar: "bg-orange-600",
+    barBg: "bg-orange-100",
+  },
+  pink: {
+    bgLight: "bg-pink-50",
+    bg: "bg-pink-100",
+    text: "text-pink-600",
+    border: "border-pink-200",
+    tagBg: "bg-pink-100",
+    tagText: "text-pink-800",
+    bar: "bg-pink-600",
+    barBg: "bg-pink-100",
+  },
+  indigo: {
+    bgLight: "bg-indigo-50",
+    bg: "bg-indigo-100",
+    text: "text-indigo-600",
+    border: "border-indigo-200",
+    tagBg: "bg-indigo-100",
+    tagText: "text-indigo-800",
+    bar: "bg-indigo-600",
+    barBg: "bg-indigo-100",
+  },
+  red: {
+    bgLight: "bg-red-50",
+    bg: "bg-red-100",
+    text: "text-red-600",
+    border: "border-red-200",
+    tagBg: "bg-red-100",
+    tagText: "text-red-800",
+    bar: "bg-red-600",
+    barBg: "bg-red-100",
+  },
+  teal: {
+    bgLight: "bg-teal-50",
+    bg: "bg-teal-100",
+    text: "text-teal-600",
+    border: "border-teal-200",
+    tagBg: "bg-teal-100",
+    tagText: "text-teal-800",
+    bar: "bg-teal-600",
+    barBg: "bg-teal-100",
+  },
+};
+
+export default React.forwardRef(function PersonaCardJTBD({ data, colorTheme = "red" }, ref) {
+  const theme = COLOR_MAP[colorTheme] || COLOR_MAP.red;
   const { name, role, location, generation, status, income, archetype, goals_jtbd, motivations, scenarios, tools, profile_image, profile_image_url } = data;
 
   const renderBar = (value) => (
-    <div className="w-full h-2 bg-rose-100 rounded">
-      <div className="h-full bg-rose-600 rounded" style={{ width: `${value}%` }} />
+    <div className={`w-full h-2 ${theme.barBg} rounded`}>
+      <div className={`h-full ${theme.bar} rounded`} style={{ width: `${value}%` }} />
     </div>
   );
 
@@ -3141,7 +3762,7 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
     <div ref={ref} className="bg-white rounded-[20px] p-10 shadow-md max-w-[1308px] text-[15px] text-gray-800">
       <div className="grid grid-cols-[302px_439px_439px] gap-[24px] items-start min-h-[720px]">
         {/* Column 1 - Avatar + Bio */}
-        <div className="flex flex-col items-center text-center gap-12 bg-rose-50 p-6 rounded-xl">
+        <div className={`flex flex-col items-center text-center gap-12 ${theme.bgLight} p-6 rounded-xl`}>
           {profile_image_url ? (
             <img
               src={profile_image_url}
@@ -3159,13 +3780,13 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
               height={254}
             />
           ) : (
-            <div className="w-[254px] h-[254px] bg-rose-200 rounded-full border-[6px] border-white" />
+            <div className={`w-[254px] h-[254px] ${theme.bg} rounded-full border-[6px] border-white`} />
           )}
           <div>
             <h2 className="text-[26px] font-bold">{name}</h2>
-            <p className="text-rose-600 font-semibold mt-3">{role}</p>
+            <p className={`${theme.text} font-semibold mt-3`}>{role}</p>
           </div>
-          <div className="bg-rose-100 p-4 rounded-xl w-full text-left space-y-1">
+          <div className={`${theme.bg} p-4 rounded-xl w-full text-left space-y-1`}>
             {location && <p><strong>Location</strong>: {location}</p>}
             {generation && <p><strong>Generation/Age</strong>: {generation}</p>}
             {status && <p><strong>Status/Kids</strong>: {status}</p>}
@@ -3177,7 +3798,7 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
         {/* Column 2 - Goals + Scenarios */}
         <div className="flex flex-col gap-6 h-full">
           {goals_jtbd?.length > 0 && (
-            <div className="bg-rose-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="text-[17px] font-semibold mb-1">Goals (JTBD)</h3>
               <ul className="list-disc list-outside pl-4">
                 {goals_jtbd.map((item, i) => <li key={i}>{item}</li>)}
@@ -3185,7 +3806,7 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
             </div>
           )}
           {scenarios?.length > 0 && (
-            <div className="bg-rose-100 p-4 rounded-xl flex-1">
+            <div className={`${theme.bg} p-4 rounded-xl flex-1`}>
               <h3 className="text-[17px] font-semibold mb-1">Scenarios</h3>
               <ul className="list-disc list-outside pl-4 ">
                 {scenarios.map((item, i) => (
@@ -3199,7 +3820,7 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
         {/* Column 3 - Motivation + Brands */}
         <div className="flex flex-col gap-6 h-full">
           {motivations && Object.keys(motivations).length > 0 && (
-            <div className="bg-rose-100 p-4 rounded-xl">
+            <div className={`${theme.bg} p-4 rounded-xl`}>
               <h3 className="text-[17px] font-semibold mb-1">Motivation</h3>
               <div className="space-y-2">
                 {Object.entries(motivations).map(([k, v]) => (
@@ -3212,11 +3833,11 @@ export default React.forwardRef(function PersonaCardJTBD({ data }, ref) {
             </div>
           )}
           {tools?.length > 0 && (
-            <div className="bg-rose-100 p-4 rounded-xl flex-1">
+            <div className={`${theme.bg} p-4 rounded-xl flex-1`}>
               <h3 className="text-[17px] font-semibold mb-2">Favourite Brands</h3>
               <div className="flex flex-wrap gap-2">
                 {tools.map((tool, i) => (
-                  <span key={i} className="bg-rose-200 text-rose-800 text-xs px-3 py-1 rounded-full">
+                  <span key={i} className={`${theme.tagBg} ${theme.tagText} text-xs px-3 py-1 rounded-full`}>
                     {tool}
                   </span>
                 ))}
@@ -3236,6 +3857,7 @@ import { useEffect, useState } from 'react';
 import { listSavedPersonas, deleteSavedPersona } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { FileUser, Eye, Trash2 } from "lucide-react";
 
 export default function PersonaDashboard() {
   const [personas, setPersonas] = useState([]);
@@ -3283,7 +3905,7 @@ export default function PersonaDashboard() {
                 {p.profile_image_url ? (
                   <img src={p.profile_image_url} alt={p.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-4xl text-gray-400">👤</div>
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center text-4xl text-gray-400"><FileUser className="w-10 h-10 text-gray-400" /></div>
                 )}
               </div>
               <h3 className="font-bold text-xl text-center mb-1">{p.name}</h3>
@@ -3293,7 +3915,7 @@ export default function PersonaDashboard() {
                   className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg flex items-center justify-center text-sm font-medium"
                   onClick={() => navigate(`/persona/${p.id}`)}
                 >
-                  <span className="material-icons mr-2" style={{ fontSize: '18px' }}>visibility</span>
+                  <Eye className="w-4 h-4 mr-2" />
                   View
                 </button>
                 <button
@@ -3301,7 +3923,7 @@ export default function PersonaDashboard() {
                   onClick={() => handleDelete(p.id)}
                   title="Delete"
                 >
-                  <span className="material-icons" style={{ fontSize: '20px' }}>delete</span>
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -3315,7 +3937,7 @@ export default function PersonaDashboard() {
 
 ## 📄 Code in `frontend\src\components\persona\PersonaForm.jsx`
 ```code
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import TagInput from "./TagInput"
 import FileUpload from "./FileUpload"
 import CustomPrompt from "./CustomPrompt"
@@ -3323,13 +3945,60 @@ import { Input } from "../ui/input"
 import { Select } from "../ui/select"
 import { Textarea } from "../ui/textarea"
 import { Accordion, AccordionItem } from "../ui/accordion"
+import { Lightbulb, Zap } from "lucide-react"
+import { ProTip } from "../ui/ProTip"
+import countryList from 'country-list';
+import axios from 'axios';
 
 export default function PersonaForm({ onGenerate, loading }) {
   const [type, setType] = useState("Classic")
   const [project, setProject] = useState("")
   const [role, setRole] = useState("")
   const [context, setContext] = useState("")
+  const [location, setLocation] = useState("")
+  const [country, setCountry] = useState("")
+  const [autoDetecting, setAutoDetecting] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  const countryOptions = [
+    { value: '', label: 'Select a country' },
+    ...countryList.getData().map(c => ({ value: c.name, label: c.name }))
+  ];
+
+  useEffect(() => {
+    // Auto-detect country on mount
+    const detectCountry = async () => {
+      try {
+        const res = await axios.get('https://ipapi.co/json/');
+        if (res.data && res.data.country_name) {
+          setCountry(res.data.country_name);
+        }
+      } catch (e) {
+        // Optionally handle error, fallback to empty
+        setCountry("");
+      }
+    };
+    detectCountry();
+  }, []);
+
+  useEffect(() => {
+    if (country) setLocation(country);
+  }, [country]);
+
+  const handleAutoDetect = async () => {
+    setAutoDetecting(true);
+    try {
+      // Use a public IP geolocation API
+      const res = await axios.get('https://ipapi.co/json/');
+      if (res.data && res.data.country_name) {
+        setCountry(res.data.country_name);
+      }
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setAutoDetecting(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -3337,15 +4006,15 @@ export default function PersonaForm({ onGenerate, loading }) {
       persona_type: type,
       project_name: project,
       target_user_role: role,
-      product_context: context
+      product_context: context,
+      location: location
     })
   }
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 text-sm p-3 rounded-md">
-        💡 <strong>Pro Tip:</strong> Start with basic info, then use AI assist to expand each section. You can always edit!
-      </div>
+      
+      <ProTip>Start with basic info, then use AI assist to expand each section. You can always edit!</ProTip>
 
       <Accordion>
         <AccordionItem title="Select Persona Type" defaultOpen>
@@ -3376,6 +4045,16 @@ export default function PersonaForm({ onGenerate, loading }) {
       </label>
 
       <label className="block">
+        <span className="text-sm font-medium">Product Context</span>
+        <Textarea
+          value={context}
+          onChange={e => setContext(e.target.value)}
+          placeholder="e.g., Ordering groceries online..."
+          className="mt-1"
+        />
+      </label>
+
+      <label className="block">
         <span className="text-sm font-medium">Target User Role</span>
         <Input
           type="text"
@@ -3387,31 +4066,35 @@ export default function PersonaForm({ onGenerate, loading }) {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Product Context</span>
-        <Textarea
-          value={context}
-          onChange={e => setContext(e.target.value)}
-          placeholder="e.g., Ordering groceries online..."
-          className="mt-1"
-        />
+        <span className="text-sm font-medium">Location</span>
+        <div className="flex gap-2 items-center mt-1">
+          <Select
+            options={countryOptions}
+            value={country}
+            onChange={e => setCountry(e.target.value)}
+            className="flex-1"
+          />
+        </div>
       </label>
+      {/*
       <AccordionItem title="Advanced Options">
-          <TagInput label="Behavior Traits" placeholder="e.g., Tech-savvy, Budget-conscious" tagColor="blue" />
-          <TagInput label="Pain Points" placeholder="e.g., Slow delivery, Hidden fees" tagColor="red" />
-          <TagInput label="Goals" placeholder="e.g., Order in under 2 mins" tagColor="green" />
-        </AccordionItem>
-        <AccordionItem title="Upload Research Data">
-          <FileUpload />
-        </AccordionItem>
-        <AccordionItem title="Add Custom Prompt">
-          <CustomPrompt />
-        </AccordionItem>
+        <TagInput label="Behavior Traits" placeholder="e.g., Tech-savvy, Budget-conscious" tagColor="blue" />
+        <TagInput label="Pain Points" placeholder="e.g., Slow delivery, Hidden fees" tagColor="red" />
+        <TagInput label="Goals" placeholder="e.g., Order in under 2 mins" tagColor="green" />
+      </AccordionItem>
+      <AccordionItem title="Upload Research Data">
+        <FileUpload />
+      </AccordionItem>
+      <AccordionItem title="Add Custom Prompt">
+        <CustomPrompt />
+      </AccordionItem>
+      */}
       <button
         type="submit"
         disabled={loading}
         className="w-full bg-purple-600 text-white py-2 rounded-md"
       >
-        {loading ? "Generating..." : "⚡ Generate Persona"}
+        {loading ? <><Zap className="inline w-4 h-4 mr-1 text-yellow-500" /> Generating...</> : <><Zap className="inline w-4 h-4 mr-1 text-yellow-500" /> Generate Persona</>}
       </button>
     </form>
   )
@@ -3421,10 +4104,14 @@ export default function PersonaForm({ onGenerate, loading }) {
 ## 📄 Code in `frontend\src\components\persona\PersonaPreview.jsx`
 ```code
 import PersonaCard from "./PersonaCard"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
+import { FileUser } from "lucide-react";
 
-const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loading, cardToggles }, ref) {
+const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loading, cardToggles, colorTheme }, ref) {
+  const [scale, setScale] = useState(1);
+
+
   if (loading) {
     return <p className="text-center text-gray-400">Generating persona...</p>
   }
@@ -3433,7 +4120,7 @@ const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loadi
     return (
       <div className="flex flex-col items-center justify-center h-full w-full">
         <Card className="max-w-xl w-full flex flex-col items-center justify-center p-10 rounded-[20px] shadow-md bg-white/90">
-          <div className="text-[90px] mb-4 leading-none">👤</div>
+          <div className="mb-4 leading-none"><FileUser  strokeWidth={1} className="w-[90px] h-[90px] text-gray-400" /></div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Ready to create a persona</h2>
           <p className="text-base text-gray-500">Fill out the form to generate your user persona.</p>
         </Card>
@@ -3442,8 +4129,8 @@ const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loadi
   }
 
   return (
-    <div className="mt-[160px]">
-      <PersonaCard data={persona} cardToggles={cardToggles} ref={ref} />
+    <div className="mt-[160px]" style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+      <PersonaCard data={persona} cardToggles={cardToggles} ref={ref} colorTheme={colorTheme} />
     </div>
   )
 });
@@ -3580,6 +4267,32 @@ export default function TagInput({ label, placeholder, tagColor }) {
 }
 ```
 
+## 📄 Code in `frontend\src\components\ui\ProTip.jsx`
+```code
+import { Card } from "./card";
+import { Badge } from "./badge";
+import { Lightbulb } from "lucide-react";
+
+export function ProTip({ children }) {
+  return (
+    <Card className="border-l-4 border-yellow-500 bg-yellow-100 p-4 flex items-start gap-3">
+      <Lightbulb className="text-yellow-500 mt-1 flex-shrink-0" size={20} strokeWidth={2} />
+      <div>
+        <Badge
+          variant="outline"
+          className="text-yellow-900 border-yellow-500 bg-yellow-200 mb-1"
+        >
+          Pro Tip
+        </Badge>
+        <p className="text-sm text-gray-900">
+          {children}
+        </p>
+      </div>
+    </Card>
+  );
+}
+```
+
 ## 📄 Code in `frontend\src\components\ui\accordion.jsx`
 ```code
 import React, { useState } from "react";
@@ -3606,6 +4319,157 @@ export function AccordionItem({ title, children, defaultOpen = false }) {
 }
 ```
 
+## 📄 Code in `frontend\src\components\ui\alert-dialog.jsx`
+```code
+"use client"
+
+import * as React from "react"
+import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
+
+import { cn } from "../../lib/utils"
+import { buttonVariants } from "./buttons"
+
+function AlertDialog(props) {
+  return <AlertDialogPrimitive.Root data-slot="alert-dialog" {...props} />
+}
+
+function AlertDialogTrigger(props) {
+  return (
+    <AlertDialogPrimitive.Trigger data-slot="alert-dialog-trigger" {...props} />
+  )
+}
+
+function AlertDialogPortal(props) {
+  return (
+    <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
+  )
+}
+
+function AlertDialogOverlay({ className, ...props }) {
+  return (
+    <AlertDialogPrimitive.Overlay
+      data-slot="alert-dialog-overlay"
+      className={cn(
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/50",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogContent({ className, ...props }) {
+  return (
+    <AlertDialogPortal>
+      <AlertDialogOverlay />
+      <AlertDialogPrimitive.Content
+        data-slot="alert-dialog-content"
+        className={cn(
+          "bg-background bg-white data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          className
+        )}
+        {...props}
+      />
+    </AlertDialogPortal>
+  )
+}
+
+function AlertDialogHeader({ className, ...props }) {
+  return (
+    <div
+      data-slot="alert-dialog-header"
+      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogFooter({ className, ...props }) {
+  return (
+    <div
+      data-slot="alert-dialog-footer"
+      className={cn(
+        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogTitle({ className, ...props }) {
+  return (
+    <AlertDialogPrimitive.Title
+      data-slot="alert-dialog-title"
+      className={cn("text-lg font-semibold", className)}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogDescription({ className, ...props }) {
+  return (
+    <AlertDialogPrimitive.Description
+      data-slot="alert-dialog-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogAction({ className, ...props }) {
+  return (
+    <AlertDialogPrimitive.Action
+      className={cn(buttonVariants(), "bg-primary", className)}
+      {...props}
+    />
+  )
+}
+
+function AlertDialogCancel({ className, ...props }) {
+  return (
+    <AlertDialogPrimitive.Cancel
+      className={cn(buttonVariants({ variant: "outline" }), className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+}
+```
+
+## 📄 Code in `frontend\src\components\ui\badge.jsx`
+```code
+import React from "react";
+import { cn } from "../../lib/utils";
+
+const Badge = React.forwardRef(({ className, variant = "default", ...props }, ref) => {
+  const base = "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2";
+  const variants = {
+    default: "bg-yellow-100 text-yellow-800 border border-yellow-500",
+    outline: "bg-yellow-100 text-yellow-800 border border-yellow-500",
+  };
+  return (
+    <span ref={ref} className={cn(base, variants[variant], className)} {...props} />
+  );
+});
+Badge.displayName = "Badge";
+
+export { Badge };
+```
+
 ## 📄 Code in `frontend\src\components\ui\button.jsx`
 ```code
 import React from "react"
@@ -3625,6 +4489,55 @@ const Button = React.forwardRef(({ className, variant = "default", ...props }, r
 Button.displayName = "Button"
 
 export { Button }
+```
+
+## 📄 Code in `frontend\src\components\ui\buttons.jsx`
+```code
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva } from "class-variance-authority"
+
+import { cn } from "../../lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90",
+        destructive: "bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline: "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary: "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+function Button({ className, variant, size, asChild = false, ...props }) {
+  const Comp = asChild ? Slot : "button"
+
+  return (
+    <Comp
+      data-slot="button"
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+
+export { Button, buttonVariants }
 ```
 
 ## 📄 Code in `frontend\src\components\ui\card.jsx`
@@ -3879,6 +4792,21 @@ export async function pollPersonaStatus(id) {
   }
   return await response.json();
 }
+
+export async function updatePersonaTheme(personaId, theme, token) {
+  const response = await fetch(`${BASE_URL}/export/persona/${personaId}/theme`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ theme }),
+  });
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+  return await response.json();
+}
 ```
 
 ## 📄 Code in `frontend\src\lib\figmaExport.js`
@@ -3916,7 +4844,7 @@ export async function copyToFigmaClipboard(figmetaB64, figmaB64) {
   await navigator.clipboard.write([
     new ClipboardItem({ "text/html": blob })
   ])
-  alert("✅ Copied to clipboard! Paste into Figma now.")
+  alert("Copied to clipboard! Paste into Figma now.")
 }
 ```
 
@@ -4085,7 +5013,137 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 ## 📄 Code in `frontend\src\lib\utils.js`
 ```code
+import { clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+
 export function cn(...inputs) {
-  return inputs.filter(Boolean).join(" ");
+  return twMerge(clsx(inputs))
+}
+```
+
+## 📄 Code in `frontend\src\styles\globals.css`
+```code
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 ```

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import TagInput from "./TagInput"
 import FileUpload from "./FileUpload"
 import CustomPrompt from "./CustomPrompt"
@@ -8,6 +8,8 @@ import { Textarea } from "../ui/textarea"
 import { Accordion, AccordionItem } from "../ui/accordion"
 import { Lightbulb, Zap } from "lucide-react"
 import { ProTip } from "../ui/ProTip"
+import countryList from 'country-list';
+import axios from 'axios';
 
 export default function PersonaForm({ onGenerate, loading }) {
   const [type, setType] = useState("Classic")
@@ -15,7 +17,49 @@ export default function PersonaForm({ onGenerate, loading }) {
   const [role, setRole] = useState("")
   const [context, setContext] = useState("")
   const [location, setLocation] = useState("")
+  const [country, setCountry] = useState("")
+  const [autoDetecting, setAutoDetecting] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
+
+  const countryOptions = [
+    { value: '', label: 'Select a country' },
+    ...countryList.getData().map(c => ({ value: c.name, label: c.name }))
+  ];
+
+  useEffect(() => {
+    // Auto-detect country on mount
+    const detectCountry = async () => {
+      try {
+        const res = await axios.get('https://ipapi.co/json/');
+        if (res.data && res.data.country_name) {
+          setCountry(res.data.country_name);
+        }
+      } catch (e) {
+        // Optionally handle error, fallback to empty
+        setCountry("");
+      }
+    };
+    detectCountry();
+  }, []);
+
+  useEffect(() => {
+    if (country) setLocation(country);
+  }, [country]);
+
+  const handleAutoDetect = async () => {
+    setAutoDetecting(true);
+    try {
+      // Use a public IP geolocation API
+      const res = await axios.get('https://ipapi.co/json/');
+      if (res.data && res.data.country_name) {
+        setCountry(res.data.country_name);
+      }
+    } catch (e) {
+      // Optionally show error
+    } finally {
+      setAutoDetecting(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -62,6 +106,16 @@ export default function PersonaForm({ onGenerate, loading }) {
       </label>
 
       <label className="block">
+        <span className="text-sm font-medium">Product Context</span>
+        <Textarea
+          value={context}
+          onChange={e => setContext(e.target.value)}
+          placeholder="e.g., Ordering groceries online..."
+          className="mt-1"
+        />
+      </label>
+
+      <label className="block">
         <span className="text-sm font-medium">Target User Role</span>
         <Input
           type="text"
@@ -73,24 +127,15 @@ export default function PersonaForm({ onGenerate, loading }) {
       </label>
 
       <label className="block">
-        <span className="text-sm font-medium">Product Context</span>
-        <Textarea
-          value={context}
-          onChange={e => setContext(e.target.value)}
-          placeholder="e.g., Ordering groceries online..."
-          className="mt-1"
-        />
-      </label>
-
-      <label className="block">
         <span className="text-sm font-medium">Location</span>
-        <Input
-          type="text"
-          value={location}
-          onChange={e => setLocation(e.target.value)}
-          placeholder="e.g., San Francisco, US"
-          className="mt-1"
-        />
+        <div className="flex gap-2 items-center mt-1">
+          <Select
+            options={countryOptions}
+            value={country}
+            onChange={e => setCountry(e.target.value)}
+            className="flex-1"
+          />
+        </div>
       </label>
       {/*
       <AccordionItem title="Advanced Options">

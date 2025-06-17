@@ -1,9 +1,12 @@
 import PersonaCard from "./PersonaCard"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import { FileUser } from "lucide-react";
 
-const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loading, cardToggles }, ref) {
+const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loading, cardToggles, colorTheme }, ref) {
+  const [scale, setScale] = useState(1);
+
+
   if (loading) {
     return <p className="text-center text-gray-400">Generating persona...</p>
   }
@@ -21,8 +24,8 @@ const PersonaPreview = React.forwardRef(function PersonaPreview({ persona, loadi
   }
 
   return (
-    <div className="mt-[160px]">
-      <PersonaCard data={persona} cardToggles={cardToggles} ref={ref} />
+    <div className="mt-[160px]" style={{ transform: `scale(${scale})`, transformOrigin: 'top center' }}>
+      <PersonaCard data={persona} cardToggles={cardToggles} ref={ref} colorTheme={colorTheme} />
     </div>
   )
 });

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import PersonaForm from "./PersonaForm";
 import PersonaPreview from "./PersonaPreview";
-import { generatePersona, pollPersonaStatus } from "../../lib/api";
+import { generatePersona, pollPersonaStatus, updatePersonaTheme } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -23,6 +23,7 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "../ui/alert-dialog";
+import ColorThemeSelector from "./ColorThemeSelector";
 
 const socialOptions = [
   { value: "linkedin", label: "LinkedIn (4:5, Recommended)" },
@@ -51,6 +52,7 @@ export default function PersonaBuilder() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertDescription, setAlertDescription] = useState("");
+  const [colorTheme, setColorTheme] = useState(null);
 
   const handleGenerate = async (formData) => {
     if (!formData) return;
@@ -123,6 +125,15 @@ export default function PersonaBuilder() {
     };
   }, [personaId]);
 
+  // When personaData changes, update colorTheme from personaData.theme (if present)
+  useEffect(() => {
+    if (personaData && personaData.theme) {
+      setColorTheme(personaData.theme);
+    } else if (personaData) {
+      setColorTheme('purple');
+    }
+  }, [personaData]);
+
   // Persona card element toggles
   const cardToggles = {
     showGoals,
@@ -163,6 +174,21 @@ export default function PersonaBuilder() {
     pdf.save('persona.pdf');
   };
 
+  // Color theme change handler
+  const handleThemeChange = async (newTheme) => {
+    setColorTheme(newTheme);
+    if (personaData && personaData.id && session?.access_token) {
+      try {
+        const updated = await updatePersonaTheme(personaData.id, newTheme, session.access_token);
+        setPersonaData((prev) => ({ ...prev, ...updated }));
+        setColorTheme(updated.theme || newTheme);
+      } catch (err) {
+        // Optionally show error to user
+        console.error('Failed to update theme:', err);
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Alert Dialog for errors */}
@@ -191,76 +217,75 @@ export default function PersonaBuilder() {
             <div className="text-gray-500 text-sm text-center">This may take a few moments. Please wait!</div>
           </div>
         ) : personaData ? (
-          <div className="bg-white rounded-xl shadow p-5 mt-10 w-full max-w-xs">
-            <div className="flex items-center mb-6">
-              <span className="h-3 w-3 bg-green-400 rounded-full mr-2"></span>
-              <span className="font-semibold text-lg">Export Options</span>
+          <>
+            {/* Color Theme Selector - only visible after persona is generated */}
+            <ColorThemeSelector value={colorTheme || 'purple'} onChange={handleThemeChange} />
+            <div className="bg-white rounded-xl shadow px-5 py-5 w-full max-w-xs">
+              <div className="space-y-4">
+                {/* PDF Export */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><FileText strokeWidth={1.5}  className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">PDF Export</span>
+                        <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">Popular</span>
+                      </div>
+                      <div className="text-xs text-gray-500">Print-ready format for sharing and presentations</div>
+                    </div>
+                  </div>
+                  <button onClick={handleExportPDF} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
+                </div>
+                {/* Figma Plugin */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><Figma strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium flex items-center gap-1">Figma Plugin</span>
+                        <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded">Design</span>
+                      </div>
+                      <div className="text-xs text-gray-500">Click Export and paste the token into the Figma plugin</div>
+                    </div>
+                  </div>
+                  {personaData.design_token && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(personaData.design_token);
+                        alert('Token copied! Paste it into the Figma plugin.');
+                      }}
+                      className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full"
+                    >
+                      Export
+                    </button>
+                  )}
+                </div>
+                {/* JPG Export */}
+                <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl"><FileImage  strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">JPG Image</span>
+                        <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded">Try Now</span>
+                      </div>
+                      <div className="text-xs text-gray-500">High quality image for web and print</div>
+                    </div>
+                  </div>
+                  <button onClick={handleExportJPG} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
+                </div>
+                <button
+                  className="w-full mt-6 bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition"
+                  onClick={() => {
+                    setPersonaData(null);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                >
+                  + Create Another Persona
+                </button>
+              </div>
             </div>
-            <div className="space-y-4">
-              {/* PDF Export */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  
-                  <span className="text-2xl"><FileText strokeWidth={1.5}  className="inline w-6 h-6 align-text-bottom" /></span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">PDF Export</span>
-                      <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded">Popular</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Print-ready format for sharing and presentations</div>
-                  </div>
-                </div>
-                <button onClick={handleExportPDF} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
-              </div>
-              {/* Figma Plugin */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl"><Figma strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium flex items-center gap-1">Figma Plugin</span>
-                      <span className="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-0.5 rounded">Design</span>
-                    </div>
-                    <div className="text-xs text-gray-500">Click Export and paste the token into the Figma plugin</div>
-                  </div>
-                </div>
-                {personaData.design_token && (
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(personaData.design_token);
-                      alert('Token copied! Paste it into the Figma plugin.');
-                    }}
-                    className="mt-4 mx-auto bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded border border-purple-200 w-full"
-                  >
-                    Export
-                  </button>
-                )}
-              </div>
-              {/* JPG Export */}
-              <div className="border rounded-lg px-3 py-3 flex flex-col items-start">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl"><FileImage  strokeWidth={1.5} className="inline w-6 h-6 align-text-bottom" /></span>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">JPG Image</span>
-                      <span className="bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded">Try Now</span>
-                    </div>
-                    <div className="text-xs text-gray-500">High quality image for web and print</div>
-                  </div>
-                </div>
-                <button onClick={handleExportJPG} className="mt-4 mx-auto bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold px-6 py-2 rounded border border-purple-200 w-full">Export</button>
-              </div>
-              <button
-                className="w-full mt-6 bg-purple-600 text-white px-4 py-2 rounded font-bold hover:bg-purple-700 transition"
-                onClick={() => {
-                  setPersonaData(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-              >
-                + Create Another Persona
-              </button>
-            </div>
-          </div>
+          </>
         ) : (
           <PersonaForm onGenerate={handleGenerate} loading={loading} />
         )}
@@ -268,7 +293,7 @@ export default function PersonaBuilder() {
       {/* Main Canvas */}
       <main className="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto bg-canvas-repeat bg-repeat">
         <div className="flex flex-col items-center justify-center w-full max-w-xl">
-          <PersonaPreview ref={exportRef} persona={personaData} loading={loading} cardToggles={cardToggles} />
+          <PersonaPreview ref={exportRef} persona={personaData} loading={loading} cardToggles={cardToggles} colorTheme={colorTheme} />
           
         </div>
       </main>

@@ -32,6 +32,7 @@ def insert_persona_to_supabase(id: str, type: str, persona_json: dict, profile_i
         "persona_json": persona_json,
         "profile_image_url": profile_image_url,
         "design_token": design_token,
+        "theme": "purple",  # Set default theme
     }
     if user_id:
         data["user_id"] = user_id

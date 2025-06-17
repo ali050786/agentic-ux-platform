@@ -59,3 +59,18 @@ export async function pollPersonaStatus(id) {
   }
   return await response.json();
 }
+
+export async function updatePersonaTheme(personaId, theme, token) {
+  const response = await fetch(`${BASE_URL}/export/persona/${personaId}/theme`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ theme }),
+  });
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+  return await response.json();
+}
