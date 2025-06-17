@@ -1,88 +1,3 @@
-
-const COLOR_MAP = {
-  purple: {
-    bgLight: { r: 0.961, g: 0.953, b: 1 },
-    bg: { r: 0.929, g: 0.91, b: 0.996 },
-    text: { r: 0.486, g: 0.227, b: 0.929 },
-    border: { r: 0.867, g: 0.839, b: 0.996 },
-    tagBg: { r: 0.929, g: 0.91, b: 0.996 },
-    tagText: { r: 0.357, g: 0.188, b: 0.714 },
-    bar: { r: 0.486, g: 0.227, b: 0.929 },
-    barBg: { r: 0.929, g: 0.91, b: 0.996 }
-  },
-  blue: {
-    bgLight: { r: 0.937, g: 0.965, b: 0.996 },
-    bg: { r: 0.859, g: 0.918, b: 0.996 },
-    text: { r: 0.145, g: 0.388, b: 0.922 },
-    border: { r: 0.749, g: 0.859, b: 0.996 },
-    tagBg: { r: 0.859, g: 0.918, b: 0.996 },
-    tagText: { r: 0.118, g: 0.251, b: 0.686 },
-    bar: { r: 0.145, g: 0.388, b: 0.922 },
-    barBg: { r: 0.859, g: 0.918, b: 0.996 }
-  },
-  green: {
-    bgLight: { r: 0.925, g: 0.992, b: 0.961 },
-    bg: { r: 0.82, g: 0.98, b: 0.898 },
-    text: { r: 0.063, g: 0.725, b: 0.506 },
-    border: { r: 0.655, g: 0.953, b: 0.816 },
-    tagBg: { r: 0.82, g: 0.98, b: 0.898 },
-    tagText: { r: 0.024, g: 0.373, b: 0.275 },
-    bar: { r: 0.063, g: 0.725, b: 0.506 },
-    barBg: { r: 0.82, g: 0.98, b: 0.898 }
-  },
-  orange: {
-    bgLight: { r: 1, g: 0.969, b: 0.929 },
-    bg: { r: 1, g: 0.929, b: 0.835 },
-    text: { r: 0.976, g: 0.451, b: 0.086 },
-    border: { r: 0.996, g: 0.843, b: 0.667 },
-    tagBg: { r: 1, g: 0.929, b: 0.835 },
-    tagText: { r: 0.761, g: 0.255, b: 0.047 },
-    bar: { r: 0.976, g: 0.451, b: 0.086 },
-    barBg: { r: 1, g: 0.929, b: 0.835 }
-  },
-  pink: {
-    bgLight: { r: 0.992, g: 0.949, b: 0.973 },
-    bg: { r: 0.984, g: 0.812, b: 0.91 },
-    text: { r: 0.925, g: 0.286, b: 0.6 },
-    border: { r: 0.976, g: 0.659, b: 0.831 },
-    tagBg: { r: 0.984, g: 0.812, b: 0.91 },
-    tagText: { r: 0.616, g: 0.09, b: 0.302 },
-    bar: { r: 0.925, g: 0.286, b: 0.6 },
-    barBg: { r: 0.984, g: 0.812, b: 0.91 }
-  },
-  indigo: {
-    bgLight: { r: 0.933, g: 0.949, b: 1 },
-    bg: { r: 0.878, g: 0.906, b: 1 },
-    text: { r: 0.31, g: 0.275, b: 0.898 },
-    border: { r: 0.78, g: 0.824, b: 0.996 },
-    tagBg: { r: 0.878, g: 0.906, b: 1 },
-    tagText: { r: 0.216, g: 0.188, b: 0.639 },
-    bar: { r: 0.31, g: 0.275, b: 0.898 },
-    barBg: { r: 0.878, g: 0.906, b: 1 }
-  },
-  red: {
-    bgLight: { r: 0.996, g: 0.949, b: 0.949 },
-    bg: { r: 0.996, g: 0.792, b: 0.792 },
-    text: { r: 0.937, g: 0.267, b: 0.267 },
-    border: { r: 0.988, g: 0.647, b: 0.647 },
-    tagBg: { r: 0.996, g: 0.792, b: 0.792 },
-    tagText: { r: 0.6, g: 0.106, b: 0.106 },
-    bar: { r: 0.937, g: 0.267, b: 0.267 },
-    barBg: { r: 0.996, g: 0.792, b: 0.792 }
-  },
-  teal: {
-    bgLight: { r: 0.941, g: 0.992, b: 0.98 },
-    bg: { r: 0.8, g: 0.984, b: 0.945 },
-    text: { r: 0.078, g: 0.722, b: 0.651 },
-    border: { r: 0.6, g: 0.965, b: 0.894 },
-    tagBg: { r: 0.8, g: 0.984, b: 0.945 },
-    tagText: { r: 0.075, g: 0.306, b: 0.29 },
-    bar: { r: 0.078, g: 0.722, b: 0.651 },
-    barBg: { r: 0.8, g: 0.984, b: 0.945 }
-  }
-};
-
-
 // Common Struction Function
 figma.showUI(__html__, { width: 450, height: 300 });
 
@@ -124,7 +39,7 @@ function createText(text, fontSize, fontWeight, color, align = "CENTER") {
   return node;
 }
 
-function createCard(titleText, items = [], theme) {
+function createCard(titleText, items = []) {
   const card = figma.createFrame();
   card.layoutMode = "VERTICAL";
   card.counterAxisAlignItems = "MIN";
@@ -134,7 +49,7 @@ function createCard(titleText, items = [], theme) {
   card.paddingTop = 16;
   card.paddingBottom = 16;
   card.cornerRadius = 10;
-  card.fills = [{ type: "SOLID", color: theme.bg }];
+  card.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }];
   card.layoutGrow = 1;
   card.minWidth = 439;
 
@@ -142,7 +57,7 @@ function createCard(titleText, items = [], theme) {
   title.characters = titleText || "Untitled";
   title.fontSize = 22;
   title.fontName = { family: "Inter", style: "Semi Bold" };
-  title.fills = [{ type: "SOLID", color: theme.text }];
+  title.fills = [{ type: "SOLID", color: { r: 0.2, g: 0.2, b: 0.2 } }];
   card.appendChild(title);
 
   if (typeof items === "string") {
@@ -168,7 +83,7 @@ function createCard(titleText, items = [], theme) {
   return card;
 }
 // First Column
-async function createFirstColumn(persona, theme) {
+async function createFirstColumn(persona) {
   const col = figma.createFrame();
   col.layoutMode = "VERTICAL";
   col.itemSpacing = 48;
@@ -176,7 +91,7 @@ async function createFirstColumn(persona, theme) {
   col.paddingRight = 24;
   col.paddingTop = 24;
   col.paddingBottom = 24;
-  col.fills = [{ type: "SOLID", color: theme.bgLight }];
+  col.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }];
   col.resize(302, 752);
   col.cornerRadius = 10;
 
@@ -186,7 +101,7 @@ async function createFirstColumn(persona, theme) {
     ellipse.resize(254, 254);
     ellipse.strokes = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
     ellipse.strokeWeight = 6;
-
+  
     if (imageUrl) {
       try {
         const imageBytes = await fetch(imageUrl).then(res => res.arrayBuffer());
@@ -203,7 +118,7 @@ async function createFirstColumn(persona, theme) {
     } else {
       ellipse.fills = [{ type: "SOLID", color: { r: 1, g: 0.85, b: 0.8 } }];
     }
-
+  
     return ellipse;
   }
 
@@ -221,10 +136,10 @@ async function createFirstColumn(persona, theme) {
   nameTitleBox.paddingTop = 0;
   nameTitleBox.counterAxisAlignItems = "CENTER"
   nameTitleBox.paddingBottom = 0;
-  nameTitleBox.fills = [{ type: "SOLID", color: theme.bgLight }]; // #FFEEE8
+  nameTitleBox.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }]; // #FFEEE8
 
   const name = createText(persona.name, 32, "Semi Bold", { r: 0.2, g: 0.2, b: 0.2 });
-  const title = createText(persona.title, 18, "Semi Bold", theme.text);
+  const title = createText(persona.title, 18, "Semi Bold", { r: 0.77, g: 0, b: 0.03 });
 
   nameTitleBox.appendChild(name);
   nameTitleBox.appendChild(title);
@@ -254,7 +169,7 @@ async function createFirstColumn(persona, theme) {
   infoBox.paddingTop = 16;
   infoBox.paddingBottom = 16;
   infoBox.cornerRadius = 10;
-  infoBox.fills = [{ type: "SOLID", color: theme.bg }];
+  infoBox.fills = [{ type: "SOLID", color: { r: 1, g: 0.86, b: 0.79 } }];
   infoBox.minWidth = 254;
 
 
@@ -271,7 +186,7 @@ async function createFirstColumn(persona, theme) {
 }
 
 
-function createCard(titleText, items = [], theme) {
+function createCard(titleText, items = []) {
   const card = figma.createFrame();
   card.layoutMode = "VERTICAL";
   card.counterAxisAlignItems = "MIN";
@@ -281,7 +196,7 @@ function createCard(titleText, items = [], theme) {
   card.paddingTop = 16;
   card.paddingBottom = 16;
   card.cornerRadius = 10;
-  card.fills = [{ type: "SOLID", color: theme.bg }];
+  card.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }];
   card.layoutGrow = 1;
   card.minWidth = 439;
 
@@ -314,12 +229,12 @@ function ensureFonts() {
   ]);
 }
 
-function createSlider(label, percent, theme) {
+function createSlider(label, percent) {
   const wrap = figma.createFrame();
   wrap.layoutMode = "VERTICAL";
   wrap.itemSpacing = 4;
   wrap.counterAxisAlignItems = "MIN";
-  wrap.fills = [{ type: "SOLID", color: theme.bg }];
+  wrap.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }];
   wrap.counterAxisSizingMode = 'AUTO';
 
   const lbl = figma.createText();
@@ -330,13 +245,13 @@ function createSlider(label, percent, theme) {
 
   const track = figma.createFrame();
   track.resize(390, 8);
-  track.fills = [{ type: "SOLID", color: theme.barBg }];
+  track.fills = [{ type: "SOLID", color: { r: 1, g: 0.866, b: 0.831 } }];
   track.cornerRadius = 4;
   track.counterAxisSizingMode = 'AUTO';
 
   const fill = figma.createRectangle();
   fill.resize(390 * percent, 8);
-  fill.fills = [{ type: "SOLID", color: theme.bar }];
+  fill.fills = [{ type: "SOLID", color: { r: 0.78, g: 0, b: 0.06 } }];
   fill.cornerRadius = 4;
 
   track.appendChild(fill);
@@ -345,19 +260,19 @@ function createSlider(label, percent, theme) {
   return wrap;
 }
 
-function createPersonalityCard(data, theme) {
-  const card = createCard("Personality", [], theme);
+function createPersonalityCard(data) {
+  const card = createCard("Personality");
   Object.entries(data).forEach(([trait, value]) => {
-    const slider = createSlider(trait, value / 100, theme);
+    const slider = createSlider(trait, value / 100);
     card.appendChild(slider);
   });
   return card;
 }
 
-function createMotivationsCard(motivations, theme) {
-  const card = createCard("Motivations", [], theme);
+function createMotivationsCard(motivations) {
+  const card = createCard("Motivations");
   Object.entries(motivations).forEach(([label, value]) => {
-    const slider = createSlider(label, value / 100, theme);
+    const slider = createSlider(label, value / 100);
     card.appendChild(slider);
   });
   return card;
@@ -365,7 +280,6 @@ function createMotivationsCard(motivations, theme) {
 //Classic//
 
 async function renderClassicPersona(persona) {
-  const theme = COLOR_MAP[persona.theme] || COLOR_MAP.blue;
   function createSecondColumn(persona) {
     const col = figma.createFrame();
     col.layoutMode = "VERTICAL";
@@ -381,10 +295,10 @@ async function renderClassicPersona(persona) {
     const background = Array.isArray(persona.background)
       ? persona.background
       : [persona.background || "Not provided"];
-    col.appendChild(createCard("Background", background, theme));
+    col.appendChild(createCard("Background", background));
 
     // Personality
-    col.appendChild(createPersonalityCard(persona.personality || {}, theme));
+    col.appendChild(createPersonalityCard(persona.personality || {}));
 
     // Behavior Tags
     if (persona.behaviorTags && Array.isArray(persona.behaviorTags)) {
@@ -397,7 +311,7 @@ async function renderClassicPersona(persona) {
       card.paddingTop = 16;
       card.paddingBottom = 16;
       card.cornerRadius = 10;
-      card.fills = [{ type: "SOLID", color: theme.bg }];
+      card.fills = [{ type: "SOLID", color: { r: 1, g: 0.933, b: 0.91 } }];
       card.layoutGrow = 1;
       card.minWidth = 439;
 
@@ -408,7 +322,7 @@ async function renderClassicPersona(persona) {
       title.fills = [{ type: "SOLID", color: { r: 0.2, g: 0.2, b: 0.2 } }];
       card.appendChild(title);
 
-      const tagWrap = figma.createFrame()
+      const tagWrap = figma.createFrame();
       tagWrap.layoutMode = "HORIZONTAL";
       tagWrap.layoutWrap = "WRAP";
       tagWrap.itemSpacing = 8;
@@ -422,13 +336,13 @@ async function renderClassicPersona(persona) {
         pill.paddingTop = 4;
         pill.paddingBottom = 4;
         pill.cornerRadius = 15;
-        pill.fills = [{ type: "SOLID", color: theme.tagBg }];
+        pill.fills = [{ type: "SOLID", color: { r: 1, g: 0.9, b: 0.95 } }];
 
         const pillText = figma.createText();
         pillText.characters = tag;
         pillText.fontSize = 12;
         pillText.fontName = { family: "Inter", style: "Regular" };
-        pillText.fills = [{ type: "SOLID", color: theme.tagText }];
+        pillText.fills = [{ type: "SOLID", color: { r: 0.7, g: 0.1, b: 0.4 } }];
 
         pill.appendChild(pillText);
         tagWrap.appendChild(pill);
@@ -442,7 +356,7 @@ async function renderClassicPersona(persona) {
     const painPoints = Array.isArray(persona.painPoints)
       ? persona.painPoints
       : [persona.painPoints || "Not provided"];
-    col.appendChild(createCard("Pain Points", painPoints, theme));
+    col.appendChild(createCard("Pain Points", painPoints));
 
     return col;
   }
@@ -459,17 +373,17 @@ async function renderClassicPersona(persona) {
     col.resize(439, 752);
 
     // Motivations
-    col.appendChild(createMotivationsCard(persona.motivations || {}, theme));
+    col.appendChild(createMotivationsCard(persona.motivations || {}));
 
     // Goals
     const goals = Array.isArray(persona.goals)
       ? persona.goals
       : [persona.goals || "Not provided"];
-    col.appendChild(createCard("Goals", goals, theme));
+    col.appendChild(createCard("Goals", goals));
 
     // Favourite Brands
     if (persona.favouriteBrands && Array.isArray(persona.favouriteBrands)) {
-      const card = createCard("Favourite Brands", [], theme);
+      const card = createCard("Favourite Brands");
       const wrap = figma.createFrame();
       wrap.layoutMode = "HORIZONTAL";
       wrap.layoutWrap = "WRAP";
@@ -485,13 +399,13 @@ async function renderClassicPersona(persona) {
         tag.paddingTop = 4;
         tag.paddingBottom = 4;
         tag.cornerRadius = 100;
-        tag.fills = [{ type: "SOLID", color: theme.tagBg }];
+        tag.fills = [{ type: "SOLID", color: { r: 0.89, g: 0.95, b: 1 } }];
 
         const txt = figma.createText();
         txt.characters = brand;
         txt.fontSize = 12;
         txt.fontName = { family: "Inter", style: "Regular" };
-        txt.fills = [{ type: "SOLID", color: theme.tagText }];
+        txt.fills = [{ type: "SOLID", color: { r: 0.1, g: 0.3, b: 0.8 } }];
 
         tag.appendChild(txt);
         wrap.appendChild(tag);
@@ -517,7 +431,7 @@ async function renderClassicPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = await createFirstColumn(persona, theme);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -529,9 +443,8 @@ async function renderClassicPersona(persona) {
 }
 
 async function renderAgilePersona(persona) {
-  const theme = COLOR_MAP[persona.theme] || COLOR_MAP.blue;
   function createBrandsCard(brands) {
-    const card = createCard("Favourite Brands", [], theme);
+    const card = createCard("Favourite Brands");
     const wrap = figma.createFrame();
     wrap.layoutMode = "HORIZONTAL";
     wrap.layoutWrap = "WRAP";
@@ -547,13 +460,13 @@ async function renderAgilePersona(persona) {
       tag.paddingTop = 4;
       tag.paddingBottom = 4;
       tag.cornerRadius = 100;
-      tag.fills = [{ type: "SOLID", color: theme.tagBg }];
+      tag.fills = [{ type: "SOLID", color: { r: 0.89, g: 0.95, b: 1 } }];
 
       const txt = figma.createText();
       txt.characters = brand;
       txt.fontSize = 12;
       txt.fontName = { family: "Inter", style: "Regular" };
-      txt.fills = [{ type: "SOLID", color: theme.tagText }];
+      txt.fills = [{ type: "SOLID", color: { r: 0.1, g: 0.3, b: 0.8 } }];
 
       tag.appendChild(txt);
       wrap.appendChild(tag);
@@ -573,8 +486,8 @@ async function renderAgilePersona(persona) {
     const goals = Array.isArray(persona.goals) ? persona.goals : [persona.goals || "Not provided"];
     const painPoints = Array.isArray(persona.painPoints) ? persona.painPoints : [persona.painPoints || "Not provided"];
 
-    col.appendChild(createCard("Goals", goals, theme));
-    col.appendChild(createCard("Pain Points", painPoints, theme));
+    col.appendChild(createCard("Goals", goals));
+    col.appendChild(createCard("Pain Points", painPoints));
 
     return col;
   }
@@ -604,7 +517,7 @@ async function renderAgilePersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = await createFirstColumn(persona, theme);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -617,9 +530,8 @@ async function renderAgilePersona(persona) {
 
 
 async function renderJtbdPersona(persona) {
-  const theme = COLOR_MAP[persona.theme] || COLOR_MAP.blue;
   function createBrandsCard(brands) {
-    const card = createCard("Favourite Brands", [], theme);
+    const card = createCard("Favourite Brands");
     const wrap = figma.createFrame();
     wrap.layoutMode = "HORIZONTAL";
     wrap.layoutWrap = "WRAP";
@@ -635,13 +547,13 @@ async function renderJtbdPersona(persona) {
       tag.paddingTop = 4;
       tag.paddingBottom = 4;
       tag.cornerRadius = 100;
-      tag.fills = [{ type: "SOLID", color: theme.tagBg }];
+      tag.fills = [{ type: "SOLID", color: { r: 1, g: 0.9, b: 0.95 } }];
 
       const txt = figma.createText();
       txt.characters = brand;
       txt.fontSize = 12;
       txt.fontName = { family: "Inter", style: "Regular" };
-      txt.fills = [{ type: "SOLID", color: theme.tagText }];
+      txt.fills = [{ type: "SOLID", color: { r: 0.7, g: 0.1, b: 0.4 } }];
 
       tag.appendChild(txt);
       wrap.appendChild(tag);
@@ -661,8 +573,8 @@ async function renderJtbdPersona(persona) {
     const goals = Array.isArray(persona.goals_jtbd) ? persona.goals_jtbd : [persona.goals_jtbd || "Not provided"];
     const scenarios = Array.isArray(persona.scenarios) ? persona.scenarios : [persona.scenarios || "Not provided"];
 
-    col.appendChild(createCard("Goals (JTBD)", goals, theme));
-    col.appendChild(createCard("Scenarios", scenarios, theme));
+    col.appendChild(createCard("Goals (JTBD)", goals));
+    col.appendChild(createCard("Scenarios", scenarios));
 
     return col;
   }
@@ -674,7 +586,7 @@ async function renderJtbdPersona(persona) {
     col.resize(439, 752);
     col.fills = [];
 
-    col.appendChild(createMotivationsCard(persona.motivations || {}, theme));
+    col.appendChild(createMotivationsCard(persona.motivations || {}));
 
     const brands = Array.isArray(persona.tools) ? persona.tools : [persona.tools || "Not provided"];
     col.appendChild(createBrandsCard(brands));
@@ -694,7 +606,7 @@ async function renderJtbdPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = await createFirstColumn(persona, theme);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -708,7 +620,6 @@ async function renderJtbdPersona(persona) {
 
 
 async function renderEmpathyPersona(persona) {
-  const theme = COLOR_MAP[persona.theme] || COLOR_MAP.blue;
   function createTagPill(text) {
     const pillFrame = figma.createFrame();
     pillFrame.layoutMode = "HORIZONTAL";
@@ -732,7 +643,7 @@ async function renderEmpathyPersona(persona) {
   }
 
   function createBehaviorTagsCard(tags) {
-    const card = createCard("Behavior Tags", [], theme);
+    const card = createCard("Behavior Tags");
     const tagWrap = figma.createFrame();
     tagWrap.layoutMode = "HORIZONTAL";
     tagWrap.layoutWrap = "WRAP";
@@ -756,13 +667,13 @@ async function renderEmpathyPersona(persona) {
     col.fills = [];
 
     const background = Array.isArray(persona.background) ? persona.background : [persona.background || "Not provided"];
-    col.appendChild(createCard("Background", background, theme));
+    col.appendChild(createCard("Background", background));
 
     if (Array.isArray(persona.behaviorTags)) {
       col.appendChild(createBehaviorTagsCard(persona.behaviorTags));
     }
 
-    col.appendChild(createPersonalityCard(persona.personality || {}, theme));
+    col.appendChild(createPersonalityCard(persona.personality || {}));
 
     return col;
   }
@@ -775,12 +686,12 @@ async function renderEmpathyPersona(persona) {
     col.fills = [];
 
     const painPoints = Array.isArray(persona.painPoints) ? persona.painPoints : [persona.painPoints || "Not provided"];
-    col.appendChild(createCard("Pain Points", painPoints, theme));
+    col.appendChild(createCard("Pain Points", painPoints));
 
-    col.appendChild(createMotivationsCard(persona.motivations || {}, theme));
+    col.appendChild(createMotivationsCard(persona.motivations || {}));
 
     const scenarios = Array.isArray(persona.scenarios) ? persona.scenarios : [persona.scenarios || "Not provided"];
-    col.appendChild(createCard("Scenarios", scenarios, theme));
+    col.appendChild(createCard("Scenarios", scenarios));
 
     return col;
   }
@@ -797,7 +708,7 @@ async function renderEmpathyPersona(persona) {
   main.fills = [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }];
   main.cornerRadius = 20;
 
-  const left = await createFirstColumn(persona, theme);
+  const left = await createFirstColumn(persona);
   const middle = createSecondColumn(persona);
   const right = createThirdColumn(persona);
 
@@ -898,92 +809,92 @@ async function renderEmpathyPersona(persona) {
       ]
     }*/
 
-/*
+  /*
+    const persona = {
+      "name": "Alex Rivera",
+      "title": "Marketing Manager",
+      "type": "Agile",
+      "location": "Remote, originally from Austin, TX",
+      "generation": "Millennial / 32 years",
+      "status": "Overwhelmed but adaptive",
+      "income": "$85,000/year",
+      "goals": [
+        "Streamline workflows to reduce context-switching fatigue",
+        "Maintain brand consistency across 5+ platforms",
+        "Stay ahead of emerging trends without deep dives",
+        "Avoid burnout while meeting quarterly KPIs"
+      ],
+      "painPoints": [
+        "Fragmented tools create duplicate work (e.g., manual data entry between CRM and analytics)",
+        "Creativity stifled by 'good enough' templates that don't reflect brand voice",
+        "Decision fatigue from choosing between 10+ analytics platforms",
+        "Fear of adopting new tools that require retraining teams"
+      ],
+      "favouriteBrands": [
+        "Slack (for urgent comms)",
+        "Trello (overloaded with half-finished boards)",
+        "Google Analytics (used only for basic reports)",
+        "Canva (for quick edits, but resists advanced features)",
+        "Zoom (with unused breakout room features)"
+      ]
+    }
+  
+  
+  
+
   const persona = {
     "name": "Alex Rivera",
-    "title": "Marketing Manager",
-    "type": "Agile",
-    "location": "Remote, originally from Austin, TX",
-    "generation": "Millennial / 32 years",
-    "status": "Overwhelmed but adaptive",
-    "income": "$85,000/year",
+    "title": "Freelance Content Creator",
+    "type": "JTBD",
+    "location": "Austin, TX",
+    "archetype": "The Juggler",
     "goals": [
-      "Streamline workflows to reduce context-switching fatigue",
-      "Maintain brand consistency across 5+ platforms",
-      "Stay ahead of emerging trends without deep dives",
-      "Avoid burnout while meeting quarterly KPIs"
+      "I need to prioritize tasks to meet multiple client deadlines without burning out.",
+      "I want to maintain creative quality while adhering to client constraints.",
+      "I need a way to track time effectively to invoice accurately but without micromanaging."
     ],
-    "painPoints": [
-      "Fragmented tools create duplicate work (e.g., manual data entry between CRM and analytics)",
-      "Creativity stifled by 'good enough' templates that don't reflect brand voice",
-      "Decision fatigue from choosing between 10+ analytics platforms",
-      "Fear of adopting new tools that require retraining teams"
+    "scenario": [
+      "Struggling to say 'no' to new projects, leading to overcommitment.",
+      "Spending hours refining a project detail because it 'feels right,' then missing the deadline.",
+      "Avoiding client calls to dodge potential scope changes but then facing dissatisfaction later."
     ],
+    "motivations": {
+      "Autonomy": 95,
+      "Efficiency": 85,
+      "Creativity": 92,
+      "Social_validation": 75,
+      "Financial_stability": 80
+    },
     "favouriteBrands": [
-      "Slack (for urgent comms)",
-      "Trello (overloaded with half-finished boards)",
-      "Google Analytics (used only for basic reports)",
-      "Canva (for quick edits, but resists advanced features)",
-      "Zoom (with unused breakout room features)"
+      "Trello",
+      "Adobe Creative Cloud",
+      "Slack",
+      "RescueTime (used inconsistently)",
+      "Avoids Asana due to perceived complexity"
     ]
-  }
- 
- 
- 
 
-const persona = {
-  "name": "Alex Rivera",
-  "title": "Freelance Content Creator",
-  "type": "JTBD",
-  "location": "Austin, TX",
-  "archetype": "The Juggler",
-  "goals": [
-    "I need to prioritize tasks to meet multiple client deadlines without burning out.",
-    "I want to maintain creative quality while adhering to client constraints.",
-    "I need a way to track time effectively to invoice accurately but without micromanaging."
-  ],
-  "scenario": [
-    "Struggling to say 'no' to new projects, leading to overcommitment.",
-    "Spending hours refining a project detail because it 'feels right,' then missing the deadline.",
-    "Avoiding client calls to dodge potential scope changes but then facing dissatisfaction later."
-  ],
-  "motivations": {
-    "Autonomy": 95,
-    "Efficiency": 85,
-    "Creativity": 92,
-    "Social_validation": 75,
-    "Financial_stability": 80
-  },
-  "favouriteBrands": [
-    "Trello",
-    "Adobe Creative Cloud",
-    "Slack",
-    "RescueTime (used inconsistently)",
-    "Avoids Asana due to perceived complexity"
-  ]
-
-  
+    
 ;
 
 
-switch (persona.type) {
-  case "Classic":
-    await renderClassicPersona(persona);
-    figma.closePlugin("Success: Classic Persona rendered");
-    break;
-  case "Agile":
-    await renderAgilePersona(persona);
-    figma.closePlugin("Success: Agile Persona rendered");
-    break;
-  case "JTBD":
-    await renderJtbdPersona(persona);
-    figma.closePlugin("Success: JTBD Persona rendered");
-    break;
-  case "Empathy":
-    await renderEmpathyPersona(persona);
-    figma.closePlugin("Success: Empathy Persona rendered");
-    break;
-  default:
-    figma.closePlugin("Error: Unknown persona type");
-}
+  switch (persona.type) {
+    case "Classic":
+      await renderClassicPersona(persona);
+      figma.closePlugin("Success: Classic Persona rendered");
+      break;
+    case "Agile":
+      await renderAgilePersona(persona);
+      figma.closePlugin("Success: Agile Persona rendered");
+      break;
+    case "JTBD":
+      await renderJtbdPersona(persona);
+      figma.closePlugin("Success: JTBD Persona rendered");
+      break;
+    case "Empathy":
+      await renderEmpathyPersona(persona);
+      figma.closePlugin("Success: Empathy Persona rendered");
+      break;
+    default:
+      figma.closePlugin("Error: Unknown persona type");
+  }
 })();*/
