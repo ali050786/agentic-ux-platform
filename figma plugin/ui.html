@@ -18,7 +18,7 @@
       if (!token) return alert("Please enter a token.");
 
       try {
-        const res = await fetch(`http://localhost:8000/api/export/public/persona/${token}`);
+        const res = await fetch(`https://agentic-ux-platform.onrender.com/api/export/public/persona/${token}`);
         if (!res.ok) throw new Error("Invalid token or persona not found");
 
         const persona = await res.json();

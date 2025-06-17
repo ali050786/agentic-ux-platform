@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000/api"
+const BASE_URL = "https://agentic-ux-platform.onrender.com/api"
 
 export async function generatePersona(data, token) {
   const headers = {
