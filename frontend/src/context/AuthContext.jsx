@@ -8,11 +8,13 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
 
   useEffect(() => {
+    // Load initial session
     supabase.auth.getSession().then(({ data }) => {
       setUser(data?.session?.user || null);
       setSession(data?.session || null);
     });
 
+    // Subscribe to auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log("Auth state changed:", _event, session);
       setUser(session?.user || null);
@@ -24,7 +26,12 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async () => {
     try {
-      window.location.href = 'https://agenticpersona.vercel.app/builder';
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: "https://agenticpersona.vercel.app/builder", // Update this if you switch to custom domain
+        },
+      });
     } catch (err) {
       alert("Unexpected error: " + err.message);
       console.error(err);
@@ -32,7 +39,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (err) {
+      console.error("Sign-out error:", err);
+    }
   };
 
   return (
