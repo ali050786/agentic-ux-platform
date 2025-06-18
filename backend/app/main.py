@@ -20,3 +20,7 @@ app.include_router(export_persona.router, prefix="/api/export", tags=["Export"])
 @app.get("/")
 def root():
     return {"message": "Agentic UX API is running"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
