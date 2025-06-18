@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const COLOR_MAP = {
   purple: {
@@ -87,6 +87,11 @@ export default React.forwardRef(function PersonaCardClassic({ data, colorTheme =
   const theme = COLOR_MAP[colorTheme] || COLOR_MAP.purple;
   const { name, title, location, generation, status, income, archetype, background, personality, behaviorTags, goals, painPoints, motivations, tools, profile_image, profile_image_url } = data;
 
+  const [avatarLoading, setAvatarLoading] = useState(!!(profile_image_url || profile_image));
+
+  const handleImageLoad = () => setAvatarLoading(false);
+  const handleImageError = () => setAvatarLoading(false);
+
   const renderBar = (value) => (
     <div className={`w-full h-2 ${theme.barBg} rounded`}>
       <div className={`h-full ${theme.bar} rounded`} style={{ width: `${value}%` }} />
@@ -99,25 +104,34 @@ export default React.forwardRef(function PersonaCardClassic({ data, colorTheme =
         {/* Column 1 - Avatar & Info */}
         <div className={`flex flex-col items-center text-center gap-12 ${theme.bgLight} p-6 rounded-xl`}>
           {/* Avatar/Profile Image */}
-          {profile_image_url ? (
-            <img
-              src={profile_image_url}
-              alt={name}
-              className="w-[254px] h-[254px] rounded-full object-cover border-[6px] border-white bg-gray-100"
-              width={254}
-              height={254}
-            />
-          ) : profile_image ? (
-            <img
-              src={`data:image/png;base64,${profile_image}`}
-              alt={name}
-              className="w-[254px] h-[254px] rounded-full object-cover border-[6px] border-white bg-gray-100"
-              width={254}
-              height={254}
-            />
-          ) : (
-            <div className="w-[254px] h-[254px] rounded-full bg-gray-100 border-[6px] border-white" />
-          )}
+          <div className="relative w-[254px] h-[254px]">
+            {(avatarLoading || !(profile_image_url || profile_image)) && (
+              <div className="absolute inset-0 flex items-center justify-center z-10">
+                <div className="w-full h-full rounded-full bg-gray-200 animate-pulse border-[6px] border-white" />
+              </div>
+            )}
+            {profile_image_url ? (
+              <img
+                src={profile_image_url}
+                alt={name}
+                className={`w-[254px] h-[254px] rounded-full object-cover border-[6px] border-white bg-gray-100 ${avatarLoading ? 'invisible' : ''}`}
+                width={254}
+                height={254}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+              />
+            ) : profile_image ? (
+              <img
+                src={`data:image/png;base64,${profile_image}`}
+                alt={name}
+                className={`w-[254px] h-[254px] rounded-full object-cover border-[6px] border-white bg-gray-100 ${avatarLoading ? 'invisible' : ''}`}
+                width={254}
+                height={254}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+              />
+            ) : null}
+          </div>
 
           {/* Name + Role */}
           <div>

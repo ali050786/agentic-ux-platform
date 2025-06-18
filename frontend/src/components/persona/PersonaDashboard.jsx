@@ -6,18 +6,22 @@ import { FileUser, Eye, Trash2 } from "lucide-react";
 
 export default function PersonaDashboard() {
   const [personas, setPersonas] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { session } = useAuth();
   const navigate = useNavigate();
   const [moreOpenId, setMoreOpenId] = useState(null);
 
   const fetchPersonas = async () => {
     if (!session) return;
+    setLoading(true);
     try {
       const list = await listSavedPersonas(session.access_token);
       console.log('Dashboard personas JSON:', list);
       setPersonas(list);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,6 +36,27 @@ export default function PersonaDashboard() {
 
   if (!session) {
     return <p className="p-6 text-center">Sign in to view saved personas.</p>;
+  }
+
+  if (loading) {
+    // Skeleton loader: show 4 placeholder cards
+    return (
+      <div className="w-full max-w-[1200px] mx-auto my-40 flex justify-center">
+        <div className="p-6 grid gap-8 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-items-center">
+          {[1,2,3,4].map((i) => (
+            <div key={i} className="bg-white rounded-2xl shadow p-6 flex flex-col items-center w-full animate-pulse">
+              <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow mb-4 bg-gray-200" />
+              <div className="h-6 w-2/3 bg-gray-200 rounded mb-2" />
+              <div className="h-4 w-1/2 bg-gray-100 rounded mb-4" />
+              <div className="flex gap-2 w-full justify-center mt-2">
+                <div className="h-10 w-20 bg-gray-200 rounded-lg" />
+                <div className="h-10 w-10 bg-gray-100 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   if (personas.length === 0) {

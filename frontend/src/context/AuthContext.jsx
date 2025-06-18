@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
 
     // Subscribe to auth changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", _event, session);
+      
       setUser(session?.user || null);
       setSession(session);
     });
@@ -25,11 +25,12 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const signIn = async () => {
+    
     try {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: process.env.REACT_APP_AUTH_REDIRECT || "https://agenticpersona.vercel.app/builder", // Uses env var if set
+          redirectTo: process.env.REACT_APP_AUTH_REDIRECT, // Uses env var if set
         },
       });
     } catch (err) {
