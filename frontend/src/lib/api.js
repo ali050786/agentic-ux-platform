@@ -1,4 +1,4 @@
-const BASE_URL = "https://agentic-ux-platform.onrender.com/api"
+const BASE_URL = process.env.BACKEND_API || "https://agentic-ux-platform.onrender.com/api"
 
 export async function generatePersona(data, token) {
   const headers = {

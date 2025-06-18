@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: "https://agenticpersona.vercel.app/builder", // Update this if you switch to custom domain
+          redirectTo: process.env.REACT_APP_AUTH_REDIRECT || "https://agenticpersona.vercel.app/builder", // Uses env var if set
         },
       });
     } catch (err) {
