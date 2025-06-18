@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async () => {
     try {
-      window.location.href = 'https://agenticpersona-k1lhmsyz5-ali050786-gmailcoms-projects.vercel.app/builder';
+      window.location.href = 'https://agenticpersona.vercel.app/builder';
     } catch (err) {
       alert("Unexpected error: " + err.message);
       console.error(err);
